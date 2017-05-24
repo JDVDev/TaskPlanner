@@ -17,5 +17,5 @@ public class Constants {
     public static final String SAVED_IS_NOTIFY_KEY = "com.jdv.retail.taskplanner.is_notify";
     public static final String NOTIFICATION_DATA_KEY = "com.jdv.retail.taskplanner.notification_data";
     public static final boolean isPollOrListen = false;
-    public static final boolean isDebug = false;
+    public static final boolean isDebug = true;
 }

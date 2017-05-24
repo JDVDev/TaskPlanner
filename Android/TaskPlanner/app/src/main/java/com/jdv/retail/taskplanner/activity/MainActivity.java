@@ -108,7 +108,7 @@ public class MainActivity extends WearableActivity {
         deviceID = (byte)sharedPref.getInt(Constants.SAVED_DEVICE_ID_KEY, 0);
 
         final TextView textViewId = (TextView) findViewById(R.id.textViewID);
-        textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}));
+        textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}).toUpperCase());
 
         textViewId.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -117,7 +117,7 @@ public class MainActivity extends WearableActivity {
                 deviceID = Utils.createRandomByte();
                 editor.putInt(Constants.SAVED_DEVICE_ID_KEY, deviceID);
                 editor.apply();
-                textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}));
+                textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}).toUpperCase());
                 return true;
             }
         });
