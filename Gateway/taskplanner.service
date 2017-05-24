@@ -1,0 +1,9 @@
+[Unit]
+Description=TaskPlanner
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /home/thomas/Development/taskplanner.js
+
+[Install]
+WantedBy=multi-user.target
