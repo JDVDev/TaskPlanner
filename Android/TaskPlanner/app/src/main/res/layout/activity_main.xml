@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:padding="0dp" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="5dp"
+        app:layout_box="all">
+
+        <TextView
+            android:id="@+id/textViewID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="3dp"
+            android:text="ID:" />
+
+        <Button
+            android:id="@+id/ping_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ping base" />
+
+        <Button
+            android:id="@+id/random_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Random msg" />
+
+        <Switch
+            android:id="@+id/notifySwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Notify" />
+
+
+    </LinearLayout>
+</android.support.wearable.view.BoxInsetLayout>

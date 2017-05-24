@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jdv.retail.taskplanner">
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".bluetooth.BleDiscoveryService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".bluetooth.BleCommunicationService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".notification.NotificationActionHandler"
+            android:exported="false" />
+
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="false" />
+
+        <activity
+            android:name=".activity.DemoCounterActivity"
+            android:label="@string/title_activity_demo_counter"
+            android:theme="@style/NonDismissible.Light" />
+        <activity
+            android:name=".activity.DemoTapperActivity"
+            android:label="@string/title_activity_demo_tapper"
+            android:theme="@style/NonDismissible.Light" />
+        <activity
+            android:name=".activity.DemoSnakeActivity"
+            android:label="@string/title_activity_demo_snake"
+            android:theme="@style/NonDismissible.Light" />
+        <activity
+            android:name=".notification.NotificationActivity"
+            android:label="@string/title_activity_notification"
+            android:theme="@style/NonDismissible.Light" />
+        <activity android:name="android.support.wearable.activity.ConfirmationActivity" />
+        <activity
+            android:name=".notification.DismissActionTimerActivity"
+            android:label="@string/title_activity_dismiss_action_timer"
+            android:theme="@style/NonDismissible.Light" />
+        <activity
+            android:name=".notification.AcceptActionActivity"
+            android:label="@string/title_activity_accept_action"
+            android:theme="@android:style/Theme.DeviceDefault.Light" />
+    </application>
+
+</manifest>

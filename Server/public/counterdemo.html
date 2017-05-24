@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <title>TaskPlanner</title>
+    <link rel="stylesheet" type="text/css" href="css/css.css">
+  </head>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="js/counterdemo.js"></script>
+  <body>
+    <div>ID Odd: <input id="didevn" autocomplete="off" /></div>
+    <div>ID Even: <input id="didodd" autocomplete="off" /></div>
+    <div>Interval: <input id="timervalue" autocomplete="off" /></div>
+    <br />
+    <button id="btnCountStart">Initialize</button>
+    <button id="btnCountStep">Step count</button>
+    <button id="btnCountAuto">Automatic count</button>
+    <button id="btnCountStop">Stop automatic count</button>
+    <br />
+    <br />
+    <button id="btnSwitch131" class="btnSwitch">Disable 131</button>
+    <button id="btnSwitch171" class="btnSwitch">Disable 171</button>
+    <ul id="messages"></ul>
+    <div id="timer">Timer:</div>
+    <table id="messagestable">
+      <tr>
+        <th>Send value</th>
+        <th>Send to ID</th> 
+        <th>Recieved value</th>
+        <!-- <th>Ping</th>
+        <th>Jitter</th> -->
+        <th>Watch packets recieved</th>
+        <th>Cyclus time</th>
+        <th>Server packets recieved</th>
+        <th>Route</th>
+      </tr>
+    </table>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send raw advertisedata</button>
+    </form>
+  </body>
+</html>
