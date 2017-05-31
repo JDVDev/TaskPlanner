@@ -261,7 +261,7 @@ io.on('connection', function(socket){
     if(connectedClients.length > 0){
       for(var i = 0; i < connectedClients.length; i++){
         console.log("Searching: " + connectedClients[i].request.connection.remoteAddress);
-        if(connectedClients[i].request.connection.remoteAddress === "::ffff:192.168.10.131"){
+        if(connectedClients[i].request.connection.remoteAddress.substr(-3) === "131"){
           console.log("Found " + connectedClients[i].request.connection.remoteAddress);
           connectedClients[i].emit('changeEnableState', msg);
           break;
@@ -272,7 +272,7 @@ io.on('connection', function(socket){
   socket.on('toggle171', function(msg){ 
     if(connectedClients.length > 0){
       for(var i = 0; i < connectedClients.length; i++){
-        if(connectedClients[i].request.connection.remoteAddress === "::ffff:192.168.10.171"){
+        if(connectedClients[i].request.connection.remoteAddress.substr(-3) === "171"){
           connectedClients[i].emit('changeEnableState', msg);
           break;
         }
