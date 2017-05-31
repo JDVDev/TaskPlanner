@@ -23,6 +23,8 @@ import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.bluetooth.BleAdvertiser;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.packet.MessageCreator;
 
@@ -92,7 +94,9 @@ public class NotificationActionHandler extends IntentService {
             BleAdvertiser.getInstance().sendAdvertising(message);
             new NotificationHandler(getApplicationContext()).dismissNotification();
         }
-        catch (InvalidMessageDataLengthException e){
+        catch (InvalidMessageSourceLengthException |
+                InvalidMessageDestinationLengthException |
+                InvalidMessageDataLengthException e){
             e.printStackTrace();
         }
     }

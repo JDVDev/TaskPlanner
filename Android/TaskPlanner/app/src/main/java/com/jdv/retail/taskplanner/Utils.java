@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.SystemClock;
+import android.util.Base64;
 import android.util.Log;
 
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
@@ -22,10 +23,18 @@ import java.util.Random;
 
 public class Utils {
 
-    public static byte getDeviceID(Context context){
+    public static byte[] getDeviceID(Context context){
         final SharedPreferences sharedPref = context.getSharedPreferences(Constants.SHARED_PREFERENCE_KEY,
                 Context.MODE_PRIVATE);
-        return (byte)sharedPref.getInt(Constants.SAVED_DEVICE_ID_KEY, 0);
+        return hexStringToByteArray(sharedPref.getString(Constants.SAVED_DEVICE_ID_KEY, "0000"));
+    }
+
+    public static void setDeviceID(Context context, byte[] deviceID){
+        final SharedPreferences sharedPref = context.getSharedPreferences(Constants.SHARED_PREFERENCE_KEY,
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(Constants.SAVED_DEVICE_ID_KEY, bytesToHexString(deviceID));
+        editor.apply();
     }
 
     public static boolean isNotify(Context context){
@@ -99,6 +108,12 @@ public class Utils {
         byte[] randomByte = new byte[1];
         new Random().nextBytes(randomByte);
         return randomByte[0];
+    }
+
+    public static byte[] createRandomByteArray(int size){
+        byte[] randomByte = new byte[size];
+        new Random().nextBytes(randomByte);
+        return randomByte;
     }
 
     public static byte[] longToBytes(long l) {

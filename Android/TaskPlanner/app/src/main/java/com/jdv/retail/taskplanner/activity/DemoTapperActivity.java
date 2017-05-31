@@ -17,10 +17,13 @@ import com.jdv.retail.taskplanner.R;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.bluetooth.BleAdvertiser;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.packet.DiscoveryResultToMessageHandler;
 import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.packet.MessageCreator;
 
+import java.util.Arrays;
 import java.util.Date;
 
 public class DemoTapperActivity extends WearableActivity implements
@@ -94,7 +97,7 @@ public class DemoTapperActivity extends WearableActivity implements
             }
             if (msg.getMessageData()[1] == (byte) 0x20 && isInGame) {
                 mContainerView.setOnClickListener(null);
-                if (msg.getMessageData()[2] == Utils.getDeviceID(context)) {
+                if (Arrays.copyOfRange(msg.getMessageData(), 2, 3) == Utils.getDeviceID(context)) { // need serverside change
                     mTextView.setText("YOU \nWON!");
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     long[] pattern = {0, 500, 100, 500, 100, 500, 100, 1000};
@@ -141,7 +144,9 @@ public class DemoTapperActivity extends WearableActivity implements
                     messageData
             );
             BleAdvertiser.getInstance().sendAdvertising(message);
-        } catch (InvalidMessageDataLengthException e) {
+        } catch (InvalidMessageSourceLengthException |
+                InvalidMessageDestinationLengthException |
+                InvalidMessageDataLengthException e) {
             e.printStackTrace();
         }
         teamColor = color;
@@ -168,7 +173,9 @@ public class DemoTapperActivity extends WearableActivity implements
                     BleAdvertiser.getInstance().sendAdvertising(message);
                     tapCounter++;
                     mTextCounterView.setText(Integer.toString(tapCounter));
-                } catch (InvalidMessageDataLengthException e) {
+                } catch (InvalidMessageSourceLengthException|
+                        InvalidMessageDestinationLengthException|
+                        InvalidMessageDataLengthException e) {
                     e.printStackTrace();
                 }
             }
@@ -214,7 +221,9 @@ public class DemoTapperActivity extends WearableActivity implements
                         messageData
                 );
                 BleAdvertiser.getInstance().sendAdvertising(message);
-            } catch (InvalidMessageDataLengthException e) {
+            } catch (InvalidMessageSourceLengthException|
+                    InvalidMessageDestinationLengthException|
+                    InvalidMessageDataLengthException e) {
                 e.printStackTrace();
             }
         }

@@ -2,8 +2,14 @@ package com.jdv.retail.taskplanner.packet;
 
 
 
+import android.util.Log;
+
+import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 
 /**
  * Created by tfi on 31/03/2017.
@@ -11,59 +17,68 @@ import com.jdv.retail.taskplanner.Utils;
 
 public class MessageCreator {
 
+    public static Message createMessage(byte[] rawBytes) throws InvalidMessageLengthException,
+            InvalidMessageSourceLengthException,
+            InvalidMessageDestinationLengthException,
+            InvalidMessageDataLengthException{
 
-    public static Message createMessage(byte messageID, byte deviceID, byte sendToDeviceID, byte messageType, byte[] messageData) throws InvalidMessageDataLengthException {
-        byte[] message = new byte[Message.MESSAGE_LEN];
-        message[0] = messageID;
-        message[1] = deviceID;
-        message[2] = sendToDeviceID;
-        message[3] = messageType;
+        if (rawBytes.length != Message.MESSAGE_TOTL_LEN) throw new InvalidMessageLengthException();
+        byte[] sourceID = new byte[Message.MESSAGE_SRCS_LEN];
+        byte[] destinationID = new byte[Message.MESSAGE_DEST_LEN];
+        byte messageID;
+        byte messageType;
+        byte[] messageData = new byte[Message.MESSAGE_DATA_LEN];
+
+        System.arraycopy(rawBytes, 0, sourceID, 0, Message.MESSAGE_SRCS_LEN);
+        System.arraycopy(rawBytes, Message.MESSAGE_SRCS_LEN, destinationID, 0, Message.MESSAGE_DEST_LEN);
+        messageID = rawBytes[Message.MESSAGE_SRCS_LEN + Message.MESSAGE_DEST_LEN];
+        messageType = rawBytes[Message.MESSAGE_SRCS_LEN + Message.MESSAGE_DEST_LEN + Message.MESSAGE_UNID_LEN];
+        System.arraycopy(rawBytes, Message.MESSAGE_DATA_OFS, messageData, 0, Message.MESSAGE_DATA_LEN);
+
+        Log.d(Constants.TAG, "getRaw" + Utils.bytesToHexString(new Message(sourceID, destinationID, messageID, messageType, messageData).getRawBytes()));
+
+        return new Message(sourceID, destinationID, messageID, messageType, messageData);
+    }
+
+    public static Message createMessage(byte[] sourceID,
+                                        byte[] destinationID,
+                                        byte messageID,
+                                        byte messageType,
+                                        byte[] messageData) throws InvalidMessageSourceLengthException,
+            InvalidMessageDestinationLengthException,
+            InvalidMessageDataLengthException {
 
         if (messageData.length != Message.MESSAGE_DATA_LEN) throw new InvalidMessageDataLengthException();
+        if (sourceID.length != Message.MESSAGE_SRCS_LEN) throw new InvalidMessageSourceLengthException();
+        if (destinationID.length != Message.MESSAGE_DEST_LEN) throw new InvalidMessageDestinationLengthException();
 
-        int offset = message.length - messageData.length;
-        System.arraycopy(messageData, 0, message, offset, messageData.length);
+        Log.d(Constants.TAG, "getRaw" + Utils.bytesToHexString(new Message(sourceID, destinationID, messageID, messageType, messageData).getRawBytes()));
 
-        return new Message(message);
+        return new Message(sourceID, destinationID, messageID, messageType, messageData);
     }
 
-    public static Message createMessage(byte deviceID, byte sendToDeviceID, byte messageType, byte[] messageData) throws InvalidMessageDataLengthException{
-        byte[] message = new byte[Message.MESSAGE_LEN];
-        message[0] = Utils.createMessageIDByte();
-        message[1] = deviceID;
-        message[2] = sendToDeviceID;
-        message[3] = messageType;
+    public static Message createMessage(byte[] sourceID,
+                                        byte[] destinationID,
+                                        byte messageType,
+                                        byte[] messageData) throws InvalidMessageSourceLengthException,
+            InvalidMessageDestinationLengthException,
+            InvalidMessageDataLengthException {
 
-        if (messageData.length != Message.MESSAGE_DATA_LEN) throw new InvalidMessageDataLengthException();
-
-        int offset = message.length - messageData.length;
-        System.arraycopy(messageData, 0, message, offset, messageData.length);
-
-        return new Message(message);
+        Message message;
+        byte messageID = Utils.createMessageIDByte();
+        message = createMessage(sourceID, destinationID, messageID, messageType, messageData);
+        return message;
     }
 
-    public static Message createMessage(byte deviceID, byte messageType, byte[] messageData) throws InvalidMessageDataLengthException{
-        byte[] message = new byte[Message.MESSAGE_LEN];
-        message[0] = Utils.createMessageIDByte();
-        message[1] = deviceID;
-        message[2] = Message.MESSAGE_ID_BROADCAST;
-        message[3] = messageType;
+    public static Message createMessage(byte[] sourceID,
+                                        byte messageType,
+                                        byte[] messageData) throws InvalidMessageSourceLengthException,
+            InvalidMessageDestinationLengthException,
+            InvalidMessageDataLengthException {
 
-        if (messageData.length != Message.MESSAGE_DATA_LEN) throw new InvalidMessageDataLengthException();
-
-        int offset = message.length - messageData.length;
-        System.arraycopy(messageData, 0, message, offset, messageData.length);
-
-        return new Message(message);
+        Message message;
+        message = createMessage(sourceID, Message.MESSAGE_ID_BROADCAST, messageType, messageData);
+        return message;
     }
 
-    public static Message createMessage(byte deviceID, byte messageType) throws InvalidMessageDataLengthException{
-        byte[] message = new byte[Message.MESSAGE_LEN];
-        message[0] = Utils.createMessageIDByte();
-        message[1] = deviceID;
-        message[2] = Message.MESSAGE_ID_BROADCAST;
-        message[3] = messageType;
-
-        return new Message(message);
-    }
 }

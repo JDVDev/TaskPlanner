@@ -27,6 +27,8 @@ import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.notification.JSONParser;
 import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.packet.MessageCreator;
@@ -45,7 +47,7 @@ public class MainActivity extends WearableActivity {
     private static String[] PERMISSIONS_LOCATION = {Manifest.permission.ACCESS_COARSE_LOCATION};
     private boolean permissions_granted = false;
     private BleAdvertiser bleAdvertiser;
-    private byte deviceID;
+    private byte[] deviceID = new byte[2];
     private Context context;
 
     @Override
@@ -69,19 +71,15 @@ public class MainActivity extends WearableActivity {
 
         bleAdvertiser = BleAdvertiser.getInstance();
 
-        if(!BluetoothAdapter.getDefaultAdapter().isMultipleAdvertisementSupported()) {
-            Toast.makeText(context, "Multiple advertisement not supported", Toast.LENGTH_SHORT ).show();
-        }
+        //if(!BluetoothAdapter.getDefaultAdapter().isMultipleAdvertisementSupported()) {
+        //    Toast.makeText(context, "Multiple advertisement not supported", Toast.LENGTH_SHORT ).show();
+        //}
 
         Button randomButton = (Button) findViewById(R.id.random_button);
         randomButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    bleAdvertiser.sendAdvertising(new Message(randomMessageData()));
-                } catch (InvalidMessageDataLengthException e){
-                    e.printStackTrace();
-                }
+                bleAdvertiser.sendAdvertising(randomMessageData());
             }
         });
 
@@ -96,7 +94,9 @@ public class MainActivity extends WearableActivity {
                         Message.MESSAGE_TYPE_PING,
                         Message.getEmptyMessageData()));
             }
-            catch (InvalidMessageDataLengthException e){
+            catch (InvalidMessageSourceLengthException|
+                    InvalidMessageDestinationLengthException|
+                    InvalidMessageDataLengthException e){
                 e.printStackTrace();
             }
             }
@@ -105,19 +105,18 @@ public class MainActivity extends WearableActivity {
 
         final SharedPreferences sharedPref = getSharedPreferences(Constants.SHARED_PREFERENCE_KEY,
                 Context.MODE_PRIVATE);
-        deviceID = (byte)sharedPref.getInt(Constants.SAVED_DEVICE_ID_KEY, 0);
+        deviceID = Utils.getDeviceID(context);
 
         final TextView textViewId = (TextView) findViewById(R.id.textViewID);
-        textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}).toUpperCase());
+        textViewId.setText(Utils.bytesToHexString(deviceID).toUpperCase());
 
         textViewId.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 SharedPreferences.Editor editor = sharedPref.edit();
-                deviceID = Utils.createRandomByte();
-                editor.putInt(Constants.SAVED_DEVICE_ID_KEY, deviceID);
-                editor.apply();
-                textViewId.setText(Utils.bytesToHexString(new byte[]{deviceID}).toUpperCase());
+                deviceID = Utils.createRandomByteArray(2);
+                Utils.setDeviceID(context, deviceID);
+                textViewId.setText(Utils.bytesToHexString(deviceID).toUpperCase());
                 return true;
             }
         });
@@ -147,12 +146,12 @@ public class MainActivity extends WearableActivity {
 
         Log.d(Constants.TAG, "can play audio: " + canPlayAudio(context));
 
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        //BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
-        for(BluetoothDevice device : pairedDevices){
-            //unpairDevice(device);
-        }
+        //for(BluetoothDevice device : pairedDevices){
+        //    unpairDevice(device);
+        //}
         if(!Constants.isDebug) {
             finish();
         }
@@ -238,7 +237,7 @@ public class MainActivity extends WearableActivity {
         return false;
     }
 
-    private byte[] randomMessageData() {
+    private Message randomMessageData() {
         int randomInt = createRandomIntInRange(3);
         byte[] emptyMessageData = Message.getEmptyMessageData();
         try {
@@ -246,27 +245,29 @@ public class MainActivity extends WearableActivity {
                 case 0:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData).getRawBytes();
+                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 1:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData).getRawBytes();
+                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 2:
                     emptyMessageData[0] = 0x02;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData).getRawBytes();
+                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 3:
                     emptyMessageData[0] = 0x02;
                     emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData).getRawBytes();
+                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 default:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData).getRawBytes();
+                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
             }
-        } catch (InvalidMessageDataLengthException e) {
+        } catch (InvalidMessageSourceLengthException|
+                InvalidMessageDestinationLengthException|
+                InvalidMessageDataLengthException e) {
             e.printStackTrace();
-            return emptyMessageData;
+            return null;
         }
     }
 

@@ -19,6 +19,8 @@ import android.util.Log;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.notification.NotificationHandler;
 import com.jdv.retail.taskplanner.packet.DiscoveryResultToMessageHandler;
 import com.jdv.retail.taskplanner.packet.Message;
@@ -89,7 +91,7 @@ public class BleCommunicationService extends Service implements DiscoveryResultT
             // Empty data & mask
             byte[] manuData = Message.getEmptyMessage();// Length isnt right
             byte[] manuMask = Message.getEmptyMessage();
-            //manuData[5] = Utils.getDeviceID(context);// Dunno why 5, but works ;)
+            //manuData[5] = Utils.getSourceID(context);// Dunno why 5, but works ;)
             //manuMask[5] = 0x01;
 
             filters = new ArrayList<>();
@@ -137,7 +139,9 @@ public class BleCommunicationService extends Service implements DiscoveryResultT
             Log.d(TAG, "StartAdvertising");
             Log.d(TAG, "Counter send: " + (++sendCounter) + " " + String.format("%02X",msg.getMessageID()));
         }
-        catch (InvalidMessageDataLengthException e){
+        catch (InvalidMessageSourceLengthException |
+                InvalidMessageDestinationLengthException |
+                InvalidMessageDataLengthException e){
             e.printStackTrace();
         }
     }

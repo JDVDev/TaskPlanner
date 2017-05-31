@@ -24,10 +24,14 @@ import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.activity.DemoSnakeActivity;
 import com.jdv.retail.taskplanner.activity.DemoTapperActivity;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.notification.NotificationHandler;
 import com.jdv.retail.taskplanner.packet.DiscoveryResultToMessageHandler;
 import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.Utils;
+import com.jdv.retail.taskplanner.packet.MessageCreator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,9 +148,12 @@ public class BleDiscoveryService extends Service implements
             if(demoData != null) {
                 Message msg;
                 try {
-                    msg = new Message(demoData);
+                    msg = MessageCreator.createMessage(demoData);
                 }
-                catch (InvalidMessageDataLengthException e){
+                catch (InvalidMessageLengthException |
+                        InvalidMessageSourceLengthException |
+                        InvalidMessageDestinationLengthException |
+                        InvalidMessageDataLengthException e){
                     Log.d(TAG, "Length invalid, discarding message");
                     e.printStackTrace();
                     return;

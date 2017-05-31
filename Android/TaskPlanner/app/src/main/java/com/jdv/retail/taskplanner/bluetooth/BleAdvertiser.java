@@ -61,7 +61,7 @@ public class BleAdvertiser{
                 .addServiceData(Constants.SERVICE_UUID, message.getRawBytes())
                 .build();
         stopAdvertising();
-        advertiser.startAdvertising(settings, data, advertisingCallback);
+        //advertiser.startAdvertising(settings, data, advertisingCallback);
         Log.d(TAG, "Send advertising: " + message);
         future = scheduleTaskExecutor.schedule(new StopAdvertisingRunnable(), SEND_TIME, TimeUnit.MILLISECONDS);
 

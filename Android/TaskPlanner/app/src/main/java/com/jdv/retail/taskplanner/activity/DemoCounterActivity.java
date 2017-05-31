@@ -12,6 +12,8 @@ import android.widget.TextView;
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 import com.jdv.retail.taskplanner.packet.DiscoveryResultToMessageHandler;
 import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.packet.MessageCreator;
@@ -72,36 +74,30 @@ public class DemoCounterActivity extends WearableActivity implements
         if (msg.getMessageData()[0] == 0x03) {
             Log.d(TAG, "Received demo counter :" + Utils.bytesToHexString(msg.getMessageData()[1]));
             mReceivedView.setText(Utils.bytesToDecimalString(msg.getMessageData()[1]));
-            {
-                try {
-                    byte[] dataBytes = Message.getEmptyMessageData();
-                    dataBytes[0] = 0x03;
-                    dataBytes[1] = (byte) (msg.getMessageData()[1] + 0x01);
-                    dataBytes[dataBytes.length - 1] = msg.getMessageData()[msg.getMessageData().length - 1]; //ID of raspi for demo counter
-                    String epochString = String.valueOf(System.currentTimeMillis());
-                    epochString = epochString.substring(epochString.length() - 8);
-                    System.arraycopy(epochString.getBytes(StandardCharsets.UTF_8), 0, dataBytes, 2, epochString.getBytes(StandardCharsets.UTF_8).length);
-                    Log.d(TAG, "Sending demo counter :" + dataBytes[1]);
-                    Log.d(TAG, "Sending epoch String :" + epochString);
-                    Log.d(TAG, "Sending epoch bytes :" + Utils.bytesToHexString(epochString.getBytes(StandardCharsets.UTF_8)));
-                    int totalPackets = BleDiscoveryService.getTotalPackets();
-                    Log.d(TAG, "Total packets: " + totalPackets);
-                    byteBuffer.clear();
-                    byteBuffer.putInt(totalPackets);
-                    Log.d(TAG, "Total packets bytes: " + Utils.bytesToHexString(byteBuffer.array()));
-                    System.arraycopy(byteBuffer.array(), 0, dataBytes, 10, byteBuffer.array().length);
-                    Message sendingMsg = MessageCreator.createMessage(
-                            (byte) (msg.getMessageID() + 0x01),
-                            Utils.getDeviceID(context),
-                            Constants.BASESTATION_ID,
-                            Message.MESSAGE_TYPE_DATA,
-                            dataBytes);
-                    Log.d(TAG, "Sending demo msg " + sendingMsg);
-                    mSendView.setText(Utils.bytesToDecimalString(sendingMsg.getMessageData()[1]));
-                    BleAdvertiser.getInstance().sendAdvertising(sendingMsg);
-                } catch (InvalidMessageDataLengthException e) {
-                    e.printStackTrace();
-                }
+            try {
+                byte[] dataBytes = Message.getEmptyMessageData();
+                dataBytes[0] = 0x03;
+                dataBytes[1] = (byte) (msg.getMessageData()[1] + 0x01);
+
+                int totalPackets = BleDiscoveryService.getTotalPackets();
+                Log.d(TAG, "Total packets: " + totalPackets);
+                dataBytes[2] = (byte) (totalPackets & 0xFF); //get lowest 8 bits
+                dataBytes[3] = (byte) ((totalPackets >>> 8) & 0xFF); //shift 8 bits right without carry ang get lowest 8 bits
+
+                dataBytes[dataBytes.length - 1] = msg.getMessageData()[msg.getMessageData().length - 1]; //ID of raspi for demo counter
+                Message sendingMsg = MessageCreator.createMessage(
+                        Utils.getDeviceID(context),
+                        Constants.BASESTATION_ID,
+                        (byte) (msg.getMessageID() + 0x01),
+                        Message.MESSAGE_TYPE_DATA,
+                        dataBytes);
+                Log.d(TAG, "Sending demo msg " + sendingMsg);
+                mSendView.setText(Utils.bytesToDecimalString(sendingMsg.getMessageData()[1]));
+                BleAdvertiser.getInstance().sendAdvertising(sendingMsg);
+            } catch (InvalidMessageSourceLengthException |
+                    InvalidMessageDestinationLengthException |
+                    InvalidMessageDataLengthException e) {
+                e.printStackTrace();
             }
         }
     }

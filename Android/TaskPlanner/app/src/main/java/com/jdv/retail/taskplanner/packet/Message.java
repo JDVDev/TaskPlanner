@@ -1,5 +1,7 @@
 package com.jdv.retail.taskplanner.packet;
 
+import com.jdv.retail.taskplanner.Constants;
+import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 
 /**
@@ -7,6 +9,8 @@ import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
  */
 
 public class Message {
+    public static final byte TIME_TO_LIVE_HOPPING = 0x0F;
+
     public static final byte MESSAGE_TYPE_PING = (byte) 0x00;
     public static final byte MESSAGE_TYPE_DATA = (byte) 0x01;
     public static final byte MESSAGE_TYPE_POLL = (byte) 0x02;
@@ -14,51 +18,62 @@ public class Message {
     public static final byte MESSAGE_TYPE_NOTI = (byte) 0x04;
     public static final byte MESSAGE_TYPE_UNKNOWN = (byte) 0xFF;
 
-    public static final byte MESSAGE_ID_BROADCAST = (byte) 0x00;
+    public static final byte[] MESSAGE_ID_BROADCAST =  {0x00, 0x00};
 
-    public static final int MESSAGE_LEN = 20;
-    public static final int MESSAGE_DATA_LEN = 16;
-    public static final int MESSAGE_DATA_OFFSET = 4;
+    public static final int MESSAGE_TOTL_LEN = 20;
+    public static final int MESSAGE_SRCS_LEN = 2;
+    public static final int MESSAGE_DEST_LEN = 2;
+    public static final int MESSAGE_UNID_LEN = 1;
+    public static final int MESSAGE_TYPE_LEN = 1;
 
-    private static final byte[] EMPTY_MESSAGE = new byte[MESSAGE_LEN];
+    public static final int MESSAGE_DATA_OFS = 6; //Payload comes after SourceID, DestinationID, MSG ID and MSG Type and before encryption key and ttl
+
+    public static final int MESSAGE_EKEY_LEN = 8;
+    public static final int MESSAGE_TTLH_LEN = 1;
+    public static final int MESSAGE_DATA_LEN =
+            MESSAGE_TOTL_LEN - (MESSAGE_SRCS_LEN +
+                                MESSAGE_DEST_LEN +
+                                MESSAGE_UNID_LEN +
+                                MESSAGE_TYPE_LEN +
+                                MESSAGE_EKEY_LEN +
+                                MESSAGE_TTLH_LEN);
+
+
+    private static final byte[] EMPTY_MESSAGE = new byte[MESSAGE_TOTL_LEN];
     private static final byte[] EMPTY_MESSAGE_DATA = new byte[MESSAGE_DATA_LEN];
 
+    private byte[] sourceID = new byte[MESSAGE_SRCS_LEN];
+    private byte[] destinationID = new byte[MESSAGE_DEST_LEN];
     private byte messageID;
-    private byte deviceID;
-    private byte sendToDeviceID;
     private byte messageType;
     private byte[] messageData = new byte[MESSAGE_DATA_LEN];
+    private byte[] messageKey = new byte[MESSAGE_EKEY_LEN];
+    private byte messageTTL;
 
-    public Message(byte mID, byte dID, byte stID, byte mType, byte[] mD) throws InvalidMessageDataLengthException {
-        if (mD.length != messageData.length) throw new InvalidMessageDataLengthException();
+
+    public Message(byte[] sID, byte[] dID, byte mID, byte mType, byte[] mD) throws InvalidMessageDataLengthException {
+        if (sID.length != MESSAGE_SRCS_LEN) throw new InvalidMessageDataLengthException();
+        if (dID.length != MESSAGE_DEST_LEN) throw new InvalidMessageDataLengthException();
+        if (mD.length != MESSAGE_DATA_LEN) throw new InvalidMessageDataLengthException();
+        sourceID = sID;
+        destinationID = dID;
         messageID = mID;
-        deviceID = dID;
-        sendToDeviceID = stID;
         messageType = mType;
         messageData = mD;
+        messageKey = Constants.ENCRYPTION_KEY;
+        messageTTL = TIME_TO_LIVE_HOPPING;
     }
 
-    public Message(byte[] rawContent) throws InvalidMessageDataLengthException{
-        if (rawContent.length != MESSAGE_LEN) throw new InvalidMessageDataLengthException();
-        messageID = rawContent[0];
-        deviceID = rawContent[1];
-        sendToDeviceID = rawContent[2];
-        messageType = rawContent[3];
+    public byte[] getSourceID() {
+        return sourceID;
+    }
 
-        int offset = rawContent.length - messageData.length;
-        System.arraycopy(rawContent, offset , messageData, 0, messageData.length);
+    public byte[] getDestinationID() {
+        return destinationID;
     }
 
     public byte getMessageID() {
         return messageID;
-    }
-
-    public byte getDeviceID() {
-        return deviceID;
-    }
-
-    public byte getSendToDeviceID() {
-        return sendToDeviceID;
     }
 
     public byte getMessageType() {
@@ -69,13 +84,23 @@ public class Message {
         return messageData;
     }
 
+    public byte[] getMessageKey() {
+        return messageKey;
+    }
+
+    public byte getMessageTTL() {
+        return messageTTL;
+    }
+
     public byte[] getRawBytes(){
-        byte[] rawMSG = new byte[MESSAGE_LEN];
-        rawMSG[0] = messageID;
-        rawMSG[1] = deviceID;
-        rawMSG[2] = sendToDeviceID;
-        rawMSG[3] = messageType;
-        System.arraycopy(messageData, 0, rawMSG, MESSAGE_DATA_OFFSET, MESSAGE_DATA_LEN);
+        byte[] rawMSG = EMPTY_MESSAGE;
+        System.arraycopy(sourceID, 0, rawMSG, 0, Message.MESSAGE_SRCS_LEN);
+        System.arraycopy(destinationID, 0, rawMSG, MESSAGE_SRCS_LEN, Message.MESSAGE_DEST_LEN);
+        rawMSG[4] = messageID;
+        rawMSG[5] = messageType;
+        System.arraycopy(messageData, 0, rawMSG, MESSAGE_DATA_OFS, MESSAGE_DATA_LEN);
+        System.arraycopy(messageKey, 0, rawMSG, MESSAGE_DATA_OFS + MESSAGE_DATA_LEN, MESSAGE_EKEY_LEN);
+        rawMSG[MESSAGE_TOTL_LEN - 1] = messageTTL;
 
         return rawMSG;
     }
@@ -88,29 +113,31 @@ public class Message {
         return EMPTY_MESSAGE_DATA;
     }
 
-    public static int getMessageDataOffset() {
-        return MESSAGE_DATA_OFFSET;
-    }
-
-    public static int getMessageDataLen() {
-        return MESSAGE_DATA_LEN;
-    }
-
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append("MsgID:" + String.format("%02X", messageID));
+        sb.append("SourceID: ");
+        sb.append(Utils.bytesToHexString(sourceID));
         sb.append(" ");
-        sb.append("DeviceID:" + String.format("%02X", deviceID));
+        sb.append("DestinationID: ");
+        sb.append(Utils.bytesToHexString(destinationID));
         sb.append(" ");
-        sb.append("SendToDeviceID:" + String.format("%02X", sendToDeviceID));
+        sb.append("MsgID: ");
+        sb.append(Utils.bytesToHexString(messageID));
         sb.append(" ");
-        sb.append("MsgType:" + String.format("%02X", messageType));
+        sb.append("MsgType: ");
+        sb.append(Utils.bytesToHexString(messageType));
         sb.append(" ");
-        sb.append("MsgData:");
+        sb.append("MsgData: ");
         for(byte b : messageData) {
             sb.append(String.format("%02x", b));
         }
+        sb.append(" ");
+        sb.append("MsgKey: ");
+        sb.append(Utils.bytesToHexString(messageKey));
+        sb.append(" ");
+        sb.append("MsgTTL: ");
+        sb.append(Utils.bytesToHexString(messageTTL));
         return sb.toString();
     }
 }

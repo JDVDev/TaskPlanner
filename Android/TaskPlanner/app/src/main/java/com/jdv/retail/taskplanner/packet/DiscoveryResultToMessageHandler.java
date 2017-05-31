@@ -2,15 +2,15 @@ package com.jdv.retail.taskplanner.packet;
 
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.os.ParcelUuid;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
-
-import org.json.JSONArray;
+import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
+import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -80,15 +80,18 @@ public class DiscoveryResultToMessageHandler{
     private void processesMessageContent(byte[] content, Context context){
         Message msg;
         try {
-            msg = new Message(content);
+            msg = MessageCreator.createMessage(content);
         }
-        catch (InvalidMessageDataLengthException e){
+        catch (InvalidMessageLengthException|
+                InvalidMessageSourceLengthException |
+                InvalidMessageDestinationLengthException |
+                InvalidMessageDataLengthException e){
             Log.d(TAG, "Length invalid, discarding message");
             e.printStackTrace();
             return;
         }
 
-        if(msg.getSendToDeviceID() == Utils.getDeviceID(context) || msg.getSendToDeviceID() == Message.MESSAGE_ID_BROADCAST) {
+        if(msg.getDestinationID() == Utils.getDeviceID(context) || msg.getDestinationID() == Message.MESSAGE_ID_BROADCAST) {
             //Log.d(TAG, "Process content: " + bytesToHex(content));
 
             if(!lastProcessedMessageID.contains(msg.getMessageID())) {
