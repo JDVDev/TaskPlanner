@@ -21,6 +21,7 @@ $(document).ready(function() {
     var tapImpact = $('#gameboard').height() / 20;
     var readyToPlay = false;
     var playerAmountInGame = 0;
+    var playersJoined = 0;
     var audioElement = $("#audioEffects").get(0);
     var audioElementBackground = $("#audioBackground").get(0);
 
@@ -212,10 +213,10 @@ $(document).ready(function() {
       var data = hexToBytes(msg);
       console.log("Player ready: " + msg.toString('hex'));
       if(data[5] === 0x50){
-        playerAmountInGame++;
-        console.log("Player amout " + playerAmountInGame.toString());
-        if(playerAmountInGame >= 3){
+        playersJoined++
+        if(playersJoined === 3 && readyToPlay === false){   
             playerAmountInGame = 3;
+            console.log("Player amount " + playerAmountInGame.toString());
             playSound("snd_se_narration_Ready.wav");
             overlayText('Get ready!');
             setTimeout(function(){
@@ -238,6 +239,7 @@ $(document).ready(function() {
                 }, 1000);
             }, 1000);
         }
+        console.log("Player joined action " + playersJoined.toString());
       }
     });
     $("#btnSwitch131").click(function(){

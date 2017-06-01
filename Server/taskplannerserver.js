@@ -9,7 +9,7 @@ var stopwatch = new Stopwatch();
 
 const MESSAGE_LEN = 40;
 var canAdvertise = false;
-var lastRecivedMessageIDBufferSize = 5;
+var lastRecivedMessageIDBufferSize = 20;
 var lastRecivedMessageIDBuffer = new Array(lastRecivedMessageIDBufferSize);
 var connectedClients = new Array();
 var counterDemoReceviedCounter = 0;
@@ -51,14 +51,23 @@ io.on('connection', function(socket){
       var discoveryData = Buffer.from(msg, 'hex'); //Remove manufacture id
       //console.log("discoveryData: " + discoveryData.toString('hex'));
       //console.log("discoveryData.lenght: " + discoveryData.length);
+<<<<<<< HEAD
       if(discoveryData[2] === 0xFB && discoveryData[3] === 0xBF){ //thats me
         if(lastRecivedMessageIDBuffer.indexOf(discoveryData[4]) === -1){
+=======
+      if(discoveryData[2] === 0xFB){ //thats me
+        if(lastRecivedMessageIDBuffer.indexOf(discoveryData.toString('hex')) === -1){
+>>>>>>> master
 
           console.log("Total packets: " + identicalPacketCounter);
           sendIdenticalPacketCounter = identicalPacketCounter + 1;
           identicalPacketCounter = 0;
 
+<<<<<<< HEAD
           lastRecivedMessageIDBuffer.push(discoveryData[4]);
+=======
+          lastRecivedMessageIDBuffer.push(discoveryData.toString('hex'));
+>>>>>>> master
           console.log("Buffer: " + lastRecivedMessageIDBuffer.toString());
           if(lastRecivedMessageIDBuffer.length >= lastRecivedMessageIDBufferSize){
               lastRecivedMessageIDBuffer = lastRecivedMessageIDBuffer.slice(1);
@@ -262,7 +271,7 @@ io.on('connection', function(socket){
     if(connectedClients.length > 0){
       for(var i = 0; i < connectedClients.length; i++){
         console.log("Searching: " + connectedClients[i].request.connection.remoteAddress);
-        if(connectedClients[i].request.connection.remoteAddress === "::ffff:192.168.10.131"){
+        if(connectedClients[i].request.connection.remoteAddress.substr(-3) === "131"){
           console.log("Found " + connectedClients[i].request.connection.remoteAddress);
           connectedClients[i].emit('changeEnableState', msg);
           break;
@@ -273,7 +282,7 @@ io.on('connection', function(socket){
   socket.on('toggle171', function(msg){ 
     if(connectedClients.length > 0){
       for(var i = 0; i < connectedClients.length; i++){
-        if(connectedClients[i].request.connection.remoteAddress === "::ffff:192.168.10.171"){
+        if(connectedClients[i].request.connection.remoteAddress.substr(-3) === "171"){
           connectedClients[i].emit('changeEnableState', msg);
           break;
         }
