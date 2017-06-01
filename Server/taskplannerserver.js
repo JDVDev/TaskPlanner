@@ -9,7 +9,7 @@ var stopwatch = new Stopwatch();
 
 const MESSAGE_LEN = 40;
 var canAdvertise = false;
-var lastRecivedMessageIDBufferSize = 5;
+var lastRecivedMessageIDBufferSize = 20;
 var lastRecivedMessageIDBuffer = new Array(lastRecivedMessageIDBufferSize);
 var connectedClients = new Array();
 var counterDemoReceviedCounter = 0;
@@ -52,13 +52,13 @@ io.on('connection', function(socket){
       //console.log("discoveryData: " + discoveryData.toString('hex'));
       //console.log("discoveryData.lenght: " + discoveryData.length);
       if(discoveryData[2] === 0xFB){ //thats me
-        if(lastRecivedMessageIDBuffer.indexOf(discoveryData[0]) === -1){
+        if(lastRecivedMessageIDBuffer.indexOf(discoveryData.toString('hex')) === -1){
 
           console.log("Total packets: " + identicalPacketCounter);
           sendIdenticalPacketCounter = identicalPacketCounter + 1;
           identicalPacketCounter = 0;
 
-          lastRecivedMessageIDBuffer.push(discoveryData[0]);
+          lastRecivedMessageIDBuffer.push(discoveryData.toString('hex'));
           console.log("Buffer: " + lastRecivedMessageIDBuffer.toString());
           if(lastRecivedMessageIDBuffer.length >= lastRecivedMessageIDBufferSize){
               lastRecivedMessageIDBuffer = lastRecivedMessageIDBuffer.slice(1);

@@ -214,10 +214,9 @@ $(document).ready(function() {
       console.log("Player ready: " + msg.toString('hex'));
       if(data[5] === 0x50){
         playersJoined++
-        playerAmountInGame++;
-        console.log("Player amout " + playerAmountInGame.toString());
-        if(playersJoined === 3 && readyToPlay === false){
+        if(playersJoined === 3 && readyToPlay === false){   
             playerAmountInGame = 3;
+            console.log("Player amount " + playerAmountInGame.toString());
             playSound("snd_se_narration_Ready.wav");
             overlayText('Get ready!');
             setTimeout(function(){
@@ -240,6 +239,7 @@ $(document).ready(function() {
                 }, 1000);
             }, 1000);
         }
+        console.log("Player joined action " + playersJoined.toString());
       }
     });
     $("#btnSwitch131").click(function(){
