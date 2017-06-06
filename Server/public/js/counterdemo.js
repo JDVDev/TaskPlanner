@@ -8,17 +8,15 @@ $(document).ready(function() {
     var timerCounter = 0;
     var timer;
     var isAutomatic = false;
-    socket.emit('advertisedata',"00fb000300000000000000000000000000000000");
+    socket.emit('advertisedata',"fbbf000000030000000000000000000000000000");
     socket.on('receiveinfo', function(msg){
       console.log(msg);
       var splitData = msg.split(',');
       $('#messagestable tr').first().next().append("<td>" + splitData[0] + "</td><td>" +
-                                                            //splitData[1] + "</td><td>" + 
-                                                            //splitData[2] + "</td><td>" + 
+                                                            splitData[1] + "</td><td>" + 
+                                                            splitData[2] + "</td><td>" + 
                                                             splitData[3] + "</td><td>" + 
-                                                            splitData[4] + "</td><td>" + 
-                                                            splitData[5] + "</td><td>" + 
-                                                            splitData[6] + "</td>");
+                                                            splitData[4] + "</td>");
     });
     socket.on('sendinfo', function(msg){
       var splitData = msg.split(',');
@@ -99,6 +97,6 @@ $(document).ready(function() {
     }
     window.onbeforeunload = function() {
       socket.emit('stopcount',"plsstop");
-      socket.emit('advertisedata',"fffb0003ff000000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf0000ff03ff00000000000000000000000000");
     };
 });

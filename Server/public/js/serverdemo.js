@@ -5,9 +5,9 @@ $(document).ready(function() {
     var jsonString = '{ "notification": [ { "id": "0001", "content": "What do you want to eat?", "action": [ { "id": "01", "content": "Meat" }, { "id": "02", "content": "Vegetables" }, { "id": "03", "content": "Chicken" }, { "id": "04", "content": "Fish" }, { "id": "05", "content": "Car" }, { "id": "06", "content": "Macawoni" }, { "id": "07", "content": "Mustache" }, { "id": "08", "content": "Surprise skittels instead of m&ms" } ] }, { "id": "0002", "content": "When do you want to go home?", "action": [ { "id": "01", "content": "When my work day ends" }, { "id": "02", "content": "Over a hour" }, { "id": "03", "content": "At 19:00" }, { "id": "04", "content": "Now" }, { "id": "05", "content": "Didnt even want to come" }, { "id": "06", "content": "Already gone" }, { "id": "07", "content": "At home sick" }, { "id": "08", "content": "Fanta" } ] }, { "id": "0003", "content": "What are you doing this weekend?", "action": [ { "id": "01", "content": "Chill" }, { "id": "02", "content": "Skipping work" }, { "id": "03", "content": "Work extra because I love my boss" }, { "id": "04", "content": "Gym life" }, { "id": "05", "content": "Bungee jump" }, { "id": "06", "content": "Party with lots of drugs" }, { "id": "07", "content": "Mustache" }, { "id": "08", "content": "Getting fired for giving the options above" } ] }, { "id": "0004", "content": "Give me a cookie!!", "action": [ { "id": "01", "content": "Yes" }, { "id": "02", "content": "Ill give you 2" }, { "id": "03", "content": "Yes" }, { "id": "04", "content": "YEAH" } ] } ] }';
     var jsonObj = JSON.parse(jsonString);
     socket.on('notificationaction', function(msg){
-      var notificationID = msg.substr(8, 4);
-      var actionID = msg.substr(12, 2);
-      var deviceID = msg.substr(2, 2);
+      var notificationID = msg.substr(12, 4);
+      var actionID = msg.substr(16, 2);
+      var deviceID = msg.substr(0, 4);
       var content = "";
       for(var i = 0; i < jsonObj.notification.length; i++){
         if(jsonObj.notification[i].id === notificationID){
@@ -35,19 +35,19 @@ $(document).ready(function() {
     });
     $("#btnVraag1").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"01fb000400010000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf000001040001000000000000000000000000");
     });
     $("#btnVraag2").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"02fb000400020000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf000002040002000000000000000000000000");
     });
     $("#btnVraag3").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"03fb000400030000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf000003040003000000000000000000000000");
     });
     $("#btnVraag4").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"04fb000400040000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf000004040004000000000000000000000000");
     });
     $("#btnSwitch131").click(function(){
       socket.emit('toggle131', toggle131);

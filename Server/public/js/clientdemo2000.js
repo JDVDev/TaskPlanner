@@ -15,9 +15,9 @@ $(document).ready(function() {
     var tapcounterBlue = 0;
     var tapcounterPurple = 0;
     var tapcounterRed = 0;
-    var IDBlue = 0x00;
-    var IDPurple = 0x00;
-    var IDRed = 0x00;
+    var IDBlue = new Uint8Array(2);
+    var IDPurple = new Uint8Array(2);
+    var IDRed = new Uint8Array(2);
     var tapImpact = $('#gameboard').height() / 20;
     var readyToPlay = false;
     var playerAmountInGame = 0;
@@ -25,12 +25,12 @@ $(document).ready(function() {
     var audioElement = $("#audioEffects").get(0);
     var audioElementBackground = $("#audioBackground").get(0);
 
-    socket.emit('advertisedata',"00fb000301000000000000000000000000000000");
+    socket.emit('advertisedata',"fbbf000000030100000000000000000000000000");
 
     socket.on('tapper', function(msg){
       var tapData = hexToBytes(msg);
-      if(tapData[5] === 0x01){
-        if(tapData[1] === IDBlue && readyToPlay){
+      if(tapData[7] === 0x01){
+        if((tapData[0] === IDBlue[0] && tapData[1] === IDBlue[1]) && readyToPlay){
           playSound("furp.wav");          
           tapcounterBlue++;
           $('#playerblue').height($('#playerblue').height() + tapImpact);
@@ -45,25 +45,28 @@ $(document).ready(function() {
             playBackgroundMusic("backgroundresult.wav");                   
             playSound("snd_se_menu_Narration_WinnerIs.wav");
             setTimeout(function(){playSound("snd_se_menu_Narration_TeamBlue.wav");}, 2000); 
-            $('#gameboard').html(IDBlue.toString(16).toUpperCase() + " Won!");
+            $('#gameboard').html(IDBlue[0].toString(16).toUpperCase() + IDBlue[1].toString(16).toUpperCase() + " Won!");
             $('#gameboard').css("background", "blue");
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
 
             readyToPlay = false;
             var sendData = new Uint8Array(20);
-            sendData[0] = tapData[0] + 0x10; //copy ID
-            sendData[1] = 0xFB;
+            sendData[0] = 0xFB;
+            sendData[1] = 0xBF;
             sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x01; //Type data
-            sendData[4] = 0x07; //Tapper demo
-            sendData[5] = 0x20; //Won game
-            sendData[6] = IDBlue; //Blue id won
+            sendData[3] = 0x00; ///set broadcast
+            sendData[4] = tapData[4] + 0x10; //copy ID
+            sendData[5] = 0x01; //Type data
+            sendData[6] = 0x07; //Tapper demo
+            sendData[7] = 0x20; //Won game
+            sendData[8] = IDBlue[0]; //Blue id won
+            sendData[9] = IDBlue[1]; //Blue id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
           }
         }
-        if(tapData[1] === IDRed && readyToPlay){
+        if((tapData[0] === IDRed[0] && tapData[1] === IDRed[1]) && readyToPlay){
           playSound("plop.wav");          
           tapcounterRed++;
           $('#playerred').height($('#playerred').height() + tapImpact);
@@ -78,25 +81,28 @@ $(document).ready(function() {
             playBackgroundMusic("backgroundresult.wav");                   
             playSound("snd_se_menu_Narration_WinnerIs.wav");
             setTimeout(function(){playSound("snd_se_menu_Narration_TeamRed.wav");}, 2000);     
-            $('#gameboard').html(IDRed.toString(16).toUpperCase() + " Won!");
+            $('#gameboard').html(IDRed[0].toString(16).toUpperCase() + IDRed[1].toString(16).toUpperCase() + " Won!");
             $('#gameboard').css("background", "red");
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
             
             readyToPlay = false;
             var sendData = new Uint8Array(20);
-            sendData[0] = tapData[0] + 0x10; //copy ID
-            sendData[1] = 0xFB;
+            sendData[0] = 0xFB;
+            sendData[1] = 0xBF;
             sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x01; //Type data
-            sendData[4] = 0x07; //Tapper demo
-            sendData[5] = 0x20; //Won game
-            sendData[6] = IDRed; //Red id won
+            sendData[3] = 0x00; ///set broadcast
+            sendData[4] = tapData[4] + 0x10; //copy ID
+            sendData[5] = 0x01; //Type data
+            sendData[6] = 0x07; //Tapper demo
+            sendData[7] = 0x20; //Won game
+            sendData[8] = IDRed[0]; //Red id won
+            sendData[9] = IDRed[1]; //Red id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
           }
         }
-        if(tapData[1] === IDPurple && readyToPlay){
+        if((tapData[0] === IDPurple[0] && tapData[1] === IDPurple[1]) && readyToPlay){
           playSound("fart.wav");                    
           tapcounterPurple++;
           $('#playerpurple').height($('#playerpurple').height() + tapImpact);          
@@ -111,19 +117,22 @@ $(document).ready(function() {
             playBackgroundMusic("backgroundresult.wav");       
             playSound("snd_se_menu_Narration_WinnerIs.wav");
             setTimeout(function(){playSound("snd_se_menu_Narration_TeamGreen.wav");}, 2000); 
-            $('#gameboard').html(IDPurple.toString(16).toUpperCase() + " Won!");
+            $('#gameboard').html(IDPurple[0].toString(16).toUpperCase() + IDPurple[1].toString(16).toUpperCase() + " Won!");
             $('#gameboard').css("background", "lightgreen");
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
             
             readyToPlay = false;
             var sendData = new Uint8Array(20);
-            sendData[0] = tapData[0] + 0x10; //copy ID
-            sendData[1] = 0xFB;
+            sendData[0] = 0xFB;
+            sendData[1] = 0xBF;
             sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x01; //Type data
-            sendData[4] = 0x07; //Tapper demo
-            sendData[5] = 0x20; //Won game
-            sendData[6] = IDPurple; //Red id won
+            sendData[3] = 0x00; ///set broadcast
+            sendData[4] = tapData[4] + 0x10; //copy ID
+            sendData[5] = 0x01; //Type data
+            sendData[6] = 0x07; //Tapper demo
+            sendData[7] = 0x20; //Won game
+            sendData[8] = IDPurple[0]; //Purple id won
+            sendData[9] = IDPurple[1]; //Purple id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
@@ -132,18 +141,21 @@ $(document).ready(function() {
       }
       if(readyToPlay){
         if($('#playerblue').height() <= 0){
-            IDBlue = 0x00;
+            IDBlue[0] = 0x00;
+            IDBlue[1] = 0x00;
             $('#playerblue').remove();
             playerAmountInGame--;
         }
         if($('#playerpurple').height() <= 0){ 
-            IDPurple = 0x00;
+            IDPurple[0] = 0x00;
+            IDPurple[1] = 0x00;
             $('#playerpurple').remove();   
             console.log("Gameover purple");         
             playerAmountInGame--;
         }
         if($('#playerred').height() <= 0){
-             IDRed = 0x00;
+             IDRed[0] = 0x00;
+             IDRed[1] = 0x00;
             $('#playerred').remove();             
              playerAmountInGame--;
         }
@@ -154,57 +166,63 @@ $(document).ready(function() {
       var data = hexToBytes(msg);
       console.log("Data: " + data);
       var sendData = new Uint8Array(20);
-      sendData[0] = data[0] + 0x10; //copy ID
-      sendData[1] = 0xFB;
-      sendData[2] = data[1]; //set senderID as reciever
-      sendData[3] = 0x01; //Type data
-      sendData[4] = 0x07; //Tapper demo
-      if(data[5] === 0x10){
-        if(IDBlue === 0x00){
+      sendData[0] = 0xFB;
+      sendData[1] = 0xBF;
+      sendData[2] = data[0]; //set senderID as reciever
+      sendData[3] = data[1]; //set senderID as reciever
+      sendData[4] = data[4] + 0x10; //copy ID
+      sendData[5] = 0x01; //Type data
+      sendData[6] = 0x07; //Tapper demo
+      
+      if(data[7] === 0x10){
+        if(IDBlue[0] === 0x00 && IDBlue[1] === 0x00){
           playSound("furp.wav");          
-          IDBlue = data[1];
-          sendData[5] = data[5]; //Joined team blue
+          IDBlue[0] = data[0];
+          IDBlue[1] = data[1];
+          sendData[7] = data[7]; //Joined team blue
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
           console.log("Joined blue sending joined blue");
-          $('#playerblue').text(IDBlue.toString(16).toUpperCase());
+          $('#playerblue').text(IDBlue[0].toString(16).toUpperCase() + IDBlue[1].toString(16).toUpperCase());
         }
         else{
             console.log("Send team full");
-            sendData[5] = 0x40;
-            sendData[6] = data[5]; 
+            sendData[7] = 0x40;
+            sendData[8] = data[7]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
-      if(data[5] === 0x11){
-        if(IDRed === 0x00){
+      if(data[7] === 0x11){
+        if(IDRed[0] === 0x00 && IDRed[1] === 0x00){
           playSound("plop.wav");          
-          IDRed = data[1];
-          sendData[5] = data[5]; //Joined team red
+          IDRed[0] = data[0];
+          IDRed[1] = data[1];
+          sendData[7] = data[7]; //Joined team red
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
-          $('#playerred').text(IDRed.toString(16).toUpperCase());
+          $('#playerred').text(IDRed[0].toString(16).toUpperCase() + IDRed[1].toString(16).toUpperCase());
         }
         else{
             console.log("Send team full");
-            sendData[5] = 0x40;
-            sendData[6] = data[5]; 
+            sendData[7] = 0x40;
+            sendData[8] = data[7]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
-    if(data[5] === 0x12){
-        if(IDPurple === 0x00){
-          playSound("fart.wav");          
-          IDPurple = data[1];
-          sendData[5] = data[5]; //Joined team pruple
+    if(data[7] === 0x12){
+        if(IDPurple[0] === 0x00 && IDPurple[1] === 0x00){
+          playSound("fart.wav");
+          IDPurple[0] = data[0];                    
+          IDPurple[1] = data[1];
+          sendData[7] = data[7]; //Joined team pruple
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
-          $('#playerpurple').text(IDPurple.toString(16).toUpperCase());
+          $('#playerpurple').text(IDPurple[0].toString(16).toUpperCase() + IDPurple[1].toString(16).toUpperCase());
         }
         else{
             console.log("Send team full");
-            sendData[5] = 0x40;
-            sendData[6] = data[5]; 
+            sendData[7] = 0x40;
+            sendData[8] = data[7]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
@@ -212,7 +230,7 @@ $(document).ready(function() {
     socket.on('playerready', function(msg){
       var data = hexToBytes(msg);
       console.log("Player ready: " + msg.toString('hex'));
-      if(data[5] === 0x50){
+      if(data[7] === 0x50){
         playersJoined++
         if(playersJoined === 3 && readyToPlay === false){   
             playerAmountInGame = 3;
@@ -272,7 +290,7 @@ $(document).ready(function() {
       return false;
     });
     window.onbeforeunload = function() {
-      socket.emit('advertisedata',"fffb0003ff000000000000000000000000000000");
+      socket.emit('advertisedata',"fbbf0000ff03ff00000000000000000000000000");
     };
     function hexToBytes(hex) {
       for (var bytes = [], c = 0; c < hex.length; c += 2)

@@ -51,23 +51,12 @@ io.on('connection', function(socket){
       var discoveryData = Buffer.from(msg, 'hex'); //Remove manufacture id
       //console.log("discoveryData: " + discoveryData.toString('hex'));
       //console.log("discoveryData.lenght: " + discoveryData.length);
-<<<<<<< HEAD
       if(discoveryData[2] === 0xFB && discoveryData[3] === 0xBF){ //thats me
-        if(lastRecivedMessageIDBuffer.indexOf(discoveryData[4]) === -1){
-=======
-      if(discoveryData[2] === 0xFB){ //thats me
         if(lastRecivedMessageIDBuffer.indexOf(discoveryData.toString('hex')) === -1){
->>>>>>> master
-
           console.log("Total packets: " + identicalPacketCounter);
           sendIdenticalPacketCounter = identicalPacketCounter + 1;
           identicalPacketCounter = 0;
-
-<<<<<<< HEAD
-          lastRecivedMessageIDBuffer.push(discoveryData[4]);
-=======
           lastRecivedMessageIDBuffer.push(discoveryData.toString('hex'));
->>>>>>> master
           console.log("Buffer: " + lastRecivedMessageIDBuffer.toString());
           if(lastRecivedMessageIDBuffer.length >= lastRecivedMessageIDBufferSize){
               lastRecivedMessageIDBuffer = lastRecivedMessageIDBuffer.slice(1);
@@ -80,7 +69,12 @@ io.on('connection', function(socket){
             //console.log("Message ID: " + discoveryData.toString('hex'));
 						//console.log("Last message ID: " + lastRecivedMessageIDBuffer.toString('hex'));
 						//console.log("Recived ping sending pong to ID: " + discoveryData.toString('hex'));
-            io.emit('receiveinfo', "Received ping from 0x" + discoveryData[1].toString(16));//Send data to browser clients
+            var sendData = Buffer.from(discoveryData);
+            sendData[0] = 0xFB;
+            sendData[1] = 0xBF;
+            sendData[2] = discoveryData[0];
+            sendData[3] = discoveryData[1];
+            io.emit('advertisedata', sendData.toString('hex'));
 					}
           if(discoveryData[5] === 0x01){//Type data
             console.log("Received data: " + discoveryData.toString('hex'));
@@ -92,34 +86,16 @@ io.on('connection', function(socket){
               demoCounter[2] = discoveryData[5]; //Counter value
               //console.log("Received demoCounter: " + demoCounter.toString('hex'));
               console.log("Received demoCounter: " + ++counterDemoReceviedCounter);
-              var epochBytes = Buffer.from(discoveryData.slice(6,14));
-              console.log("Epoch string in bytes: " + epochBytes.toString('hex'));
-              var epochString = epochBytes.toString();
-              console.log("Epoch string: " + epochString);
-              var epochServer = parseInt((new Date).getTime().toString().substr(-8));
-              console.log("epoch server: " + epochServer + " epochClient: " + epochString);
-              var timeTaken = epochServer - parseInt(epochString);
-              var jitter = 0;
-              if(discoveryData.slice(7, 8).readUInt8(0) %2 === 0){// recv even so send is odd
-                jitter = timeTaken - jitterOdd;
-                jitterOdd = timeTaken;
-              }
-              else{// recv odd so send is even
-                jitter = timeTaken - jitterEven;
-                jitterEven = timeTaken;
-              }
               var raspiID = "";
-              if(discoveryData[11] === 0x01){
+              if(discoveryData[10] === 0x01){
                 raspiID = "171";
               }
-              else if(discoveryData[11] === 0x02){
+              if(discoveryData[10] === 0x02){
                 raspiID = "131";
               }
               var watchReceivedPacketAmountByWatch = 0;
               watchReceivedPacketAmountByWatch = discoveryData.readUInt16LE(8,2);
               var ommitedSendString = discoveryData.slice(7, 8).readUInt8(0).toString() + 
-                                    "," + timeTaken + " ms" + 
-                                    "," + jitter + " ms" + 
                                     "," + watchReceivedPacketAmountByWatch.toString() + 
                                     "," + stopwatch.ms / 1000 + " s" + 
                                     "," + sendIdenticalPacketCounter.toString() +
@@ -129,33 +105,23 @@ io.on('connection', function(socket){
               stopwatch.reset();
               //io.emit('counterdemocounter', demoCounter.toString('hex'));//Send data to browser clients
             }
-            if(discoveryData[5] === 0x04){ //Notification Action
-              console.log("Received noti action");
-              if(discoveryData[6] === 0x01){ //Accepted
-                io.emit('actionaccept', discoveryData.slice(6,8).toString('hex') + discoveryData.slice(1).toString('hex'));
-                console.log("Send action: " + discoveryData.slice(6,8).toString('hex'));
-              }
-              if(discoveryData[6] === 0x02){ //Dismissed
-                io.emit('actiondismiss', discoveryData.slice(6,8).toString('hex') + discoveryData.slice(1).toString('hex'));
-              }
-            }
-            if(discoveryData[5] === 0x05){ //Send tap
+            if(discoveryData[6] === 0x05){ //Send tap
               
             }
-            if(discoveryData[5] === 0x06){ //Send snake control
+            if(discoveryData[6] === 0x06){ //Send snake control
               console.log("Received control send: " + discoveryData.slice(5).toString('hex'));
               io.emit('snakedirection', discoveryData.slice(5).toString('hex'));
             }
-            if(discoveryData[5] === 0x07){ //Join team for tapper demo
+            if(discoveryData[6] === 0x07){ //Join team for tapper demo
               console.log("Received tapper demo: " + discoveryData.toString('hex'));
-              if(discoveryData[6] === 0x01){
+              if(discoveryData[7] === 0x01){
                 console.log("Send tap");
                 io.emit('tapper', discoveryData.toString('hex'));
               }
-              if(discoveryData[6] === 0x10 || discoveryData[5] === 0x11 || discoveryData[5] === 0x12){
+              if(discoveryData[7] === 0x10 || discoveryData[7] === 0x11 || discoveryData[7] === 0x12){
                 io.emit('setplayer', discoveryData.toString('hex'));
               }
-              if(discoveryData[6] === 0x50){
+              if(discoveryData[7] === 0x50){
                 io.emit('playerready', discoveryData.toString('hex'));
               }
             }
@@ -187,14 +153,14 @@ io.on('connection', function(socket){
       console.log("Mallformed data: " + splitData.length);
       return;
     }
-    var deviceIDs = Buffer.alloc(2);
+    var deviceIDs = Buffer.alloc(4);
     var stringIDS = splitData[0] + splitData[1];
     var timerValue = splitData[2];
     if(timerValue < 5){
       timerValue = 5;
     }
     console.log("ID msg lenght: " + stringIDS.length);
-    if(stringIDS.length === 4){
+    if(stringIDS.length === 8){
       deviceIDs = Buffer.from(stringIDS, 'hex');
     }
     socket.on('democounterstep', function(msg){ //Step counter demo
@@ -222,29 +188,33 @@ io.on('connection', function(socket){
 function counterDemoStep(deviceIDs){
   var sendData = Buffer.alloc(MESSAGE_LEN / 2);
   // Set initail data
-  sendData[0] = 0x00; //MSG ID
-  sendData[1] = 0xFB; //This deviceID
-  sendData[2] = 0x00; //DeviceID to send to (0x00 is preciefed as broadcast by reciving devices)
-  sendData[3] = 0x01; //MSG Type (0x01 is preciefed as a msg containing data)
-  sendData[4] = 0x03; //Data to speceficy running demo counter
+  sendData[0] = 0xFB; //This deviceID
+  sendData[1] = 0xBF; //This deviceID
+  sendData[2] = 0x00; //DeviceID to send to (0x0000 is preciefed as broadcast by reciving devices)
+  sendData[3] = 0x00; //DeviceID to send to (0x0000 is preciefed as broadcast by reciving devices)
+  sendData[4] = 0x00; //MSG ID
+  sendData[5] = 0x01; //MSG Type
+  sendData[6] = 0x03; //Data to speceficy running demo counter
 
   //Manipulate data
-  sendData[0] = byteCounter[0]; //MSG ID
+  sendData[4] = byteCounter[0]; //MSG ID
   console.log("Device IDs " + deviceIDs.toString('hex'));
   if(demoCounterCounter %2 === 0){// Even
     console.log("Even");
     sendData[2] = deviceIDs[0];
+    sendData[3] = deviceIDs[1];
   }
   else{ //odd
     console.log("Odd");
-    sendData[2] = deviceIDs[1];
+    sendData[2] = deviceIDs[2];
+    sendData[3] = deviceIDs[3];
   }
   demoCounterCounter++;
-  sendData[5] = byteCounter[0];
+  sendData[7] = byteCounter[0];
   //console.log("Send " + counter + " messages, sending msg with ID: 0x" + sendData[0].toString(16) + " and byteCounter: 0X" + byteCounter.toString('hex'));
   stopwatch.start();
   io.emit('advertisedata', sendData.toString('hex'));
-  io.emit('sendinfo', sendData.readUInt8(5) + "," + sendData.slice(2, 3).toString('hex'));
+  io.emit('sendinfo', sendData.readUInt8(7) + "," + sendData.slice(2, 4).toString('hex'));
   byteCounter[0] += 0x01;
   if(byteCounter[0] === 0xFF){
     byteCounter[0] = 0x01;

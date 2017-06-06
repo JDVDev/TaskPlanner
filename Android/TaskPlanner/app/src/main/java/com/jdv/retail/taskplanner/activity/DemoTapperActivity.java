@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,6 +26,7 @@ import com.jdv.retail.taskplanner.packet.MessageCreator;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.ConsoleHandler;
 
 public class DemoTapperActivity extends WearableActivity implements
         DiscoveryResultToMessageHandler.OnConfigurationMessageReceived,
@@ -97,7 +99,7 @@ public class DemoTapperActivity extends WearableActivity implements
             }
             if (msg.getMessageData()[1] == (byte) 0x20 && isInGame) {
                 mContainerView.setOnClickListener(null);
-                if (Arrays.copyOfRange(msg.getMessageData(), 2, 3) == Utils.getDeviceID(context)) { // need serverside change
+                if (Arrays.equals(Arrays.copyOfRange(msg.getMessageData(), 2, 4), Utils.getDeviceID(context))) {
                     mTextView.setText("YOU \nWON!");
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     long[] pattern = {0, 500, 100, 500, 100, 500, 100, 1000};

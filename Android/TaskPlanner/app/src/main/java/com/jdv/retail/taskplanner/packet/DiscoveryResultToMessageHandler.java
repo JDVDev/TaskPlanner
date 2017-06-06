@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
+import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
@@ -13,6 +14,7 @@ import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -62,18 +64,15 @@ public class DiscoveryResultToMessageHandler{
 
     public void processDiscoveryResults(ScanResult result, Context context){
         //Log.d(TAG, "Proces: " + result);
-        byte[] messageData = null;
+        byte[] messageBytes = null;
         try {
-            messageData = result.getScanRecord().getServiceData(Constants.SERVICE_UUID);
+            messageBytes = result.getScanRecord().getServiceData(Constants.SERVICE_UUID);
         } catch (NullPointerException e){ //No Service data ignore message
             e.printStackTrace();
         }
-        //byte messageId = messageData[0];
-        /*Log.d(TAG, "Key: " + messageId);
-        Log.d(TAG, "Data: " + bytesToHex(messageData));
-        Log.d(TAG, "Procesmessage: " + bytesToHex(messageData));*/
-        if(messageData != null) { //Ignore if no scanRecord or no service data
-            processesMessageContent(messageData, context);
+        if(messageBytes != null) { //Ignore if no scanRecord or no service data
+            //Log.d(TAG, "Procesmessage: " + Utils.bytesToHexString(messageBytes));
+            processesMessageContent(messageBytes, context);
         }
     }
 
@@ -91,8 +90,8 @@ public class DiscoveryResultToMessageHandler{
             return;
         }
 
-        if(msg.getDestinationID() == Utils.getDeviceID(context) || msg.getDestinationID() == Message.MESSAGE_ID_BROADCAST) {
-            //Log.d(TAG, "Process content: " + bytesToHex(content));
+        if(Arrays.equals(msg.getDestinationID(), Utils.getDeviceID(context)) || Arrays.equals(msg.getDestinationID(), Message.MESSAGE_ID_BROADCAST)){
+            //Log.d(TAG, "Process content: " + Utils.bytesToHexString(content));
 
             if(!lastProcessedMessageID.contains(msg.getMessageID())) {
                 Log.d(TAG, "lastProcessedMessageID !contains: " + msg.getMessageID());
@@ -105,8 +104,7 @@ public class DiscoveryResultToMessageHandler{
                 }
 
                 if (msg.getMessageType() == Message.MESSAGE_TYPE_PING) {
-                    Log.d(TAG, "Content: " + Utils.bytesToHexString(msg.getMessageData()));
-                    Toast.makeText(context, "Pong", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Pong " + BleDiscoveryService.getTotalPackets(), Toast.LENGTH_SHORT).show();
                 }
                 if(msg.getMessageType() == Message.MESSAGE_TYPE_CFIG){
                     for(OnConfigurationMessageReceived listener : onConfigurationMessageReceivedListeners){

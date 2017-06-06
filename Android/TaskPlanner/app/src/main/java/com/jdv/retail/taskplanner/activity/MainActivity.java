@@ -88,11 +88,13 @@ public class MainActivity extends WearableActivity {
             @Override
             public void onClick(View v){
             try {
-                bleAdvertiser.sendAdvertising(MessageCreator.createMessage(
+                Message msg = MessageCreator.createMessage(
                         deviceID,
                         Constants.BASESTATION_ID,
                         Message.MESSAGE_TYPE_PING,
-                        Message.getEmptyMessageData()));
+                        Message.getEmptyMessageData());
+                bleAdvertiser.sendAdvertising(msg);
+                Log.d(Constants.TAG, "Ping: " + msg);
             }
             catch (InvalidMessageSourceLengthException|
                     InvalidMessageDestinationLengthException|
@@ -113,7 +115,6 @@ public class MainActivity extends WearableActivity {
         textViewId.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                SharedPreferences.Editor editor = sharedPref.edit();
                 deviceID = Utils.createRandomByteArray(2);
                 Utils.setDeviceID(context, deviceID);
                 textViewId.setText(Utils.bytesToHexString(deviceID).toUpperCase());

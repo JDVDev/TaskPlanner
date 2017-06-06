@@ -60,7 +60,7 @@ socket.on('advertisedata', function(msg){ //Start advertising received data
       for(var i = 0; i < recivedData.length; i++){
           advertisementData[i + MESSAGE_OFFSET] = recivedData[i];
       }
-      advertisementData[advertisementData.length - 1] = 0x02; //Raspi ID for counter demo, 0x01=171, 0x02=131
+      advertisementData[21] = 0x02; //Raspi ID for counter demo, 0x01=171, 0x02=131
       console.log("Advertisement: " + advertisementData.toString('hex'));
       if(isEnabled){
         //bleno.startAdvertisingWithEIRData(advertisementData);
@@ -112,6 +112,7 @@ socket.on('connect', function(msg){ //This client connected to server
   console.log("Connect");
   isConnected = true;
   if(canDiscover){
+    console.log("Connected -> Discovering");    
     noble.startScanning([SERVICE_UUID_16.toString().toLocaleLowerCase()], true);
   }
   else{
@@ -131,7 +132,9 @@ socket.on('disconnect', function(msg){ //This client lost connection to server
 noble.on('stateChange', function(state) { //Start listening when bluetooth adapter in noble is ready
   if (state === 'poweredOn') {
     canDiscover = true;
+    console.log("Can discover");
     if(isConnected){
+      console.log("Powered on -> Discovering");
       noble.startScanning([SERVICE_UUID_16.toString().toLocaleLowerCase()], true);
     }
     else{
