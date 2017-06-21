@@ -12,10 +12,16 @@ import android.util.Log;
 
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Created by tfi on 18/04/2017.

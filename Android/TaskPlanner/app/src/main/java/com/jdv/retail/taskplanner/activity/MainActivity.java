@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -44,6 +45,7 @@ import java.util.Set;
 
 public class MainActivity extends WearableActivity {
     private static final int REQUEST_LOCATION = 0;
+    private static final int REQUEST_WRITE = 1;
     private static String[] PERMISSIONS_LOCATION = {Manifest.permission.ACCESS_COARSE_LOCATION};
     private boolean permissions_granted = false;
     private BleAdvertiser bleAdvertiser;
@@ -64,6 +66,10 @@ public class MainActivity extends WearableActivity {
             } else{
                 Log.i(Constants.TAG, "Location permission has already been granted. Starting scanning.");
                 permissions_granted = true;
+            }
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestWritePermission();
             }
         } else{
             permissions_granted = true;
@@ -89,6 +95,7 @@ public class MainActivity extends WearableActivity {
             public void onClick(View v){
             try {
                 Message msg = MessageCreator.createMessage(
+                        Constants.MESSAGE_SEQUENCE,
                         deviceID,
                         Constants.BASESTATION_ID,
                         Message.MESSAGE_TYPE_PING,
@@ -96,9 +103,7 @@ public class MainActivity extends WearableActivity {
                 bleAdvertiser.sendAdvertising(msg);
                 Log.d(Constants.TAG, "Ping: " + msg);
             }
-            catch (InvalidMessageSourceLengthException|
-                    InvalidMessageDestinationLengthException|
-                    InvalidMessageDataLengthException e){
+            catch (InvalidLengthException e){
                 e.printStackTrace();
             }
             }
@@ -188,6 +193,25 @@ public class MainActivity extends WearableActivity {
         }
     }
 
+    private void requestWritePermission(){
+        if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Permission Required");
+            builder.setMessage("Please grant Write access so this application can log battery levels");
+            builder.setPositiveButton(android.R.string.ok, null);
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener(){
+                public void onDismiss(DialogInterface dialog){
+                    Log.d(Constants.TAG, "Requesting permissions after explanation");
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE);
+                }
+            });
+            builder.show();
+        } else{
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE);
+        }
+    }
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
         if(requestCode == REQUEST_LOCATION){
@@ -205,6 +229,17 @@ public class MainActivity extends WearableActivity {
                 }
             } else{
                 Log.i(Constants.TAG, "Location permission was NOT granted.");
+            }
+        } else{
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        if(requestCode == REQUEST_WRITE){
+            Log.i(Constants.TAG, "Received response for location permission request.");
+            // Check if the only required permission has been granted
+            if(grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Log.i(Constants.TAG, "Write permission has now been granted");
+            } else{
+                Log.i(Constants.TAG, "Write permission was NOT granted");
             }
         } else{
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -242,31 +277,37 @@ public class MainActivity extends WearableActivity {
         int randomInt = createRandomIntInRange(3);
         byte[] emptyMessageData = Message.getEmptyMessageData();
         try {
-            switch (randomInt) {
+            /*switch (randomInt) {
                 case 0:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 1:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 2:
                     emptyMessageData[0] = 0x02;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 case 3:
                     emptyMessageData[0] = 0x02;
                     emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
                 default:
                     emptyMessageData[0] = 0x01;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
-            }
-        } catch (InvalidMessageSourceLengthException|
-                InvalidMessageDestinationLengthException|
-                InvalidMessageDataLengthException e) {
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+            }*/
+            return MessageCreator.createMessage(
+                    Utils.hexStringToByteArray("ffffff"),
+                    Utils.hexStringToByteArray("fbbf"),
+                    Utils.hexStringToByteArray("0000"),
+                    Utils.hexStringToByteArray("72")[0],
+                    Utils.hexStringToByteArray("01")[0],
+                    Utils.hexStringToByteArray("0720b3620000"));
+
+        } catch (InvalidLengthException e) {
             e.printStackTrace();
             return null;
         }
@@ -274,5 +315,17 @@ public class MainActivity extends WearableActivity {
 
     private int createRandomIntInRange(int range){
         return new Random().nextInt(range);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        finish();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
     }
 }

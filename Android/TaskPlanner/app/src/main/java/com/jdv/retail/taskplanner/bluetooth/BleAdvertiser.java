@@ -57,7 +57,6 @@ public class BleAdvertiser{
     public void sendAdvertising(Message message){
         AdvertiseData data = new AdvertiseData.Builder()
                 .setIncludeDeviceName(false)
-                .addServiceUuid(Constants.SERVICE_UUID)
                 .addServiceData(Constants.SERVICE_UUID, message.getRawBytes())
                 .build();
         stopAdvertising();

@@ -2,30 +2,50 @@
 <html>
   <head>
     <title>TaskPlanner</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/css.css">
   </head>
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/jquery-3.2.1.min.js"></script>
   <script>
     $(document).ready(function() {
       var socket = io();
+      var toggle131 = false;
+      var toggle171 = false;
       $('form').submit(function(){
         socket.emit('advertisedata', $('#m').val());
         $('#m').val('');
         return false;
       });
+      $("#btnSwitch131").click(function(){
+        socket.emit('toggle131', toggle131);
+        toggle131 = !toggle131;
+        if(toggle131){
+          $('#btnSwitch131').text("Enable 131");
+          $('#btnSwitch131').css("background-color", "red");        
+        }
+        else{
+          $('#btnSwitch131').text("Disable 131");
+          $('#btnSwitch131').css("background-color", "lightgreen"); 
+        }
+      });
+      $("#btnSwitch171").click(function(){
+        socket.emit('toggle171', toggle171);
+        toggle171 = !toggle171;
+        if(toggle171){
+          $('#btnSwitch171').text("Enable 171");
+          $('#btnSwitch171').css("background-color", "red");      
+        }
+        else{
+          $('#btnSwitch171').text("Disable 171");
+          $('#btnSwitch171').css("background-color", "lightgreen");       
+        }
+      });      
     });
   </script>
   <body>
+    <button id="btnSwitch131" class="btnSwitch">Disable 131</button>
+    <button id="btnSwitch171" class="btnSwitch">Disable 171</button>
+    <br />
     <a href="/clientdemo2000.html">Client demo</a>
     <br />
     <a href="/serverdemo.html">Server demo</a>
@@ -35,6 +55,7 @@
     <a href="/snake.html">Snake demo</a>
     <br />
     <a href="/AOQTD-Tap-Game-master/index.html">Experimento numero eins</a>
+    <br />
     <form action="">
       <input id="m" autocomplete="off" /><button>Send raw advertisedata</button>
     </form>

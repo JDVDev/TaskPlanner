@@ -3,7 +3,7 @@ Description=TaskPlanner
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/node /home/thomas/Development/taskplanner.js
+ExecStart=/usr/bin/node ~/TaskPlanner/Gateway/taskplanner.js
 
 [Install]
 WantedBy=multi-user.target

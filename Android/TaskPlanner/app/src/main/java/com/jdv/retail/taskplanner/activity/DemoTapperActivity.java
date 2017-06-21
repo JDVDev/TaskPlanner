@@ -17,6 +17,7 @@ import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.R;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.bluetooth.BleAdvertiser;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -140,15 +141,14 @@ public class DemoTapperActivity extends WearableActivity implements
             messageData[0] = 0x07;
             messageData[1] = 0x50;
             Message message = MessageCreator.createMessage(
+                    Constants.MESSAGE_SEQUENCE,
                     Utils.getDeviceID(context),
                     Constants.BASESTATION_ID,
                     Message.MESSAGE_TYPE_DATA,
                     messageData
             );
             BleAdvertiser.getInstance().sendAdvertising(message);
-        } catch (InvalidMessageSourceLengthException |
-                InvalidMessageDestinationLengthException |
-                InvalidMessageDataLengthException e) {
+        } catch (InvalidLengthException e) {
             e.printStackTrace();
         }
         teamColor = color;
@@ -167,6 +167,7 @@ public class DemoTapperActivity extends WearableActivity implements
                     messageData[0] = 0x07;
                     messageData[1] = 0x01;
                     Message message = MessageCreator.createMessage(
+                            Constants.MESSAGE_SEQUENCE,
                             Utils.getDeviceID(context),
                             Constants.BASESTATION_ID,
                             Message.MESSAGE_TYPE_DATA,
@@ -175,9 +176,7 @@ public class DemoTapperActivity extends WearableActivity implements
                     BleAdvertiser.getInstance().sendAdvertising(message);
                     tapCounter++;
                     mTextCounterView.setText(Integer.toString(tapCounter));
-                } catch (InvalidMessageSourceLengthException|
-                        InvalidMessageDestinationLengthException|
-                        InvalidMessageDataLengthException e) {
+                } catch (InvalidLengthException e) {
                     e.printStackTrace();
                 }
             }
@@ -217,15 +216,14 @@ public class DemoTapperActivity extends WearableActivity implements
                     buttonPurple.setText("Joining...");
                 }
                 Message message = MessageCreator.createMessage(
+                        Constants.MESSAGE_SEQUENCE,
                         Utils.getDeviceID(context),
                         Constants.BASESTATION_ID,
                         Message.MESSAGE_TYPE_DATA,
                         messageData
                 );
                 BleAdvertiser.getInstance().sendAdvertising(message);
-            } catch (InvalidMessageSourceLengthException|
-                    InvalidMessageDestinationLengthException|
-                    InvalidMessageDataLengthException e) {
+            } catch (InvalidLengthException e) {
                 e.printStackTrace();
             }
         }

@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -86,6 +87,7 @@ public class DemoCounterActivity extends WearableActivity implements
 
                 dataBytes[dataBytes.length - 1] = msg.getMessageData()[msg.getMessageData().length - 1]; //ID of raspi for demo counter
                 Message sendingMsg = MessageCreator.createMessage(
+                        Constants.MESSAGE_SEQUENCE,
                         Utils.getDeviceID(context),
                         Constants.BASESTATION_ID,
                         (byte) (msg.getMessageID() + 0x01),
@@ -94,9 +96,7 @@ public class DemoCounterActivity extends WearableActivity implements
                 Log.d(TAG, "Sending demo msg " + sendingMsg);
                 mSendView.setText(Utils.bytesToDecimalString(sendingMsg.getMessageData()[1]));
                 BleAdvertiser.getInstance().sendAdvertising(sendingMsg);
-            } catch (InvalidMessageSourceLengthException |
-                    InvalidMessageDestinationLengthException |
-                    InvalidMessageDataLengthException e) {
+            } catch (InvalidLengthException e) {
                 e.printStackTrace();
             }
         }

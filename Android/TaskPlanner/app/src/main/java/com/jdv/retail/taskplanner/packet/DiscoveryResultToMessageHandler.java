@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
@@ -80,11 +81,21 @@ public class DiscoveryResultToMessageHandler{
         Message msg;
         try {
             msg = MessageCreator.createMessage(content);
+            byte[] tempData = msg.getMessageData();
+            tempData[tempData.length - 1] = 0x00;// Reset receiver ID, remove code if non proof of concept code
+            byte[] hash = msg.getMessageKey();
+            byte[] newHash = MessageCreator.createMessageKey(
+                    Constants.ENCRYPTION_KEY,
+                    msg.getMessageSequence(),
+                    msg.getSourceID(),
+                    msg.getDestinationID(),
+                    msg.getMessageID(),
+                    msg.getMessageType(),
+                    tempData);
+            Log.d(TAG, "hash: " + Utils.bytesToHexString(hash) + " newHash: " + Utils.bytesToHexString(newHash));
+            if(!Arrays.equals(hash, newHash)) return;//Check hash to see if it is for this network.
         }
-        catch (InvalidMessageLengthException|
-                InvalidMessageSourceLengthException |
-                InvalidMessageDestinationLengthException |
-                InvalidMessageDataLengthException e){
+        catch (InvalidLengthException e){
             Log.d(TAG, "Length invalid, discarding message");
             e.printStackTrace();
             return;
@@ -104,7 +115,11 @@ public class DiscoveryResultToMessageHandler{
                 }
 
                 if (msg.getMessageType() == Message.MESSAGE_TYPE_PING) {
-                    Toast.makeText(context, "Pong " + BleDiscoveryService.getTotalPackets(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context,
+                            "Pong " + BleDiscoveryService.getTotalPackets() +
+                                    " " +
+                                    Utils.bytesToHexString(msg.getMessageTTL()),
+                            Toast.LENGTH_SHORT).show();
                 }
                 if(msg.getMessageType() == Message.MESSAGE_TYPE_CFIG){
                     for(OnConfigurationMessageReceived listener : onConfigurationMessageReceivedListeners){

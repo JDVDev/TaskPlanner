@@ -8,7 +8,7 @@ $(document).ready(function() {
     var timerCounter = 0;
     var timer;
     var isAutomatic = false;
-    socket.emit('advertisedata',"fbbf000000030000000000000000000000000000");
+    socket.emit('advertisedata',"fffffffbbf00000003000000000000000000000000000000");
     socket.on('receiveinfo', function(msg){
       console.log(msg);
       var splitData = msg.split(',');
@@ -97,6 +97,6 @@ $(document).ready(function() {
     }
     window.onbeforeunload = function() {
       socket.emit('stopcount',"plsstop");
-      socket.emit('advertisedata',"fbbf0000ff03ff00000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000ff03ff0000000000000000000000000000");
     };
 });

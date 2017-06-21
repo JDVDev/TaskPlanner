@@ -12,7 +12,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.os.BatteryManager;
 import android.os.Build;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.PowerManager;
@@ -23,6 +27,7 @@ import com.jdv.retail.taskplanner.activity.DemoCounterActivity;
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.activity.DemoSnakeActivity;
 import com.jdv.retail.taskplanner.activity.DemoTapperActivity;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
@@ -33,8 +38,18 @@ import com.jdv.retail.taskplanner.packet.Message;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.packet.MessageCreator;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import static android.R.attr.data;
 
 public class BleDiscoveryService extends Service implements
         DiscoveryResultToMessageHandler.OnPreprocessedMessageReceived,
@@ -47,6 +62,13 @@ public class BleDiscoveryService extends Service implements
     private PowerManager.WakeLock wakeLock;
     private Context context;
     private NotificationHandler notificationHandler;
+
+    List<ScanFilter> scanFilters = new ArrayList<>();
+    ScanSettings scanSettings;
+
+    private Thread batteryLevelMonitorThread;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
+    private boolean isMeasuring = false;
 
     private int receiveCounter = 0;
 
@@ -79,6 +101,16 @@ public class BleDiscoveryService extends Service implements
             mBluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
         }
 
+        ScanFilter scanFilter = new ScanFilter.Builder()
+                .setServiceData(Constants.SERVICE_UUID,
+                        new byte[] {0x00}, //Filter
+                        new byte[] {0x00}) //Mask out filter to receive different scan data
+                .build();
+        scanFilters.add(scanFilter);
+        scanSettings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+                .build();
+
         startForeground(NotificationHandler.NOTIFICATION_ID,
                 new NotificationHandler(context).getDefaultNotification());
     }
@@ -88,12 +120,55 @@ public class BleDiscoveryService extends Service implements
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Utils.setAlarm(context);
         }
-        super.onStartCommand(intent, flags, startId);
-        Log.d(TAG, "Starting discovery service for reason: " + intent);
-
         stopDiscovery();
         startDiscovery();
-
+        Log.d(TAG, "Starting discovery service for reason: " + intent);
+        final File path = Environment.getExternalStorageDirectory();
+        if(path.exists() && !isMeasuring && Constants.isDebug){
+            isMeasuring = true;
+            batteryLevelMonitorThread = new Thread(new Runnable() {
+                public void run() {
+                    Log.d(TAG, "Path exists");
+                    Date date = new Date();
+                    File log = new File(path, "Loglog.log");
+                    try {
+                        Log.d(TAG, "Create file");
+                        log.createNewFile();
+                        FileOutputStream fOut = new FileOutputStream(log);
+                        OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+                        Log.d(TAG, "Write date");
+                        myOutWriter.append(date.toString());
+                        myOutWriter.append("\n");
+                        myOutWriter.close();
+                        fOut.flush();
+                        fOut.close();
+                        try {
+                            while (!Thread.interrupted()) {
+                                fOut = new FileOutputStream(log, true);
+                                myOutWriter = new OutputStreamWriter(fOut);
+                                BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
+                                int batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+                                Log.d(TAG, "Write level: " + Integer.toString(batLevel));
+                                myOutWriter.append(sdf.format(new Date()));
+                                myOutWriter.append(": ");
+                                myOutWriter.append(Integer.toString(batLevel));
+                                myOutWriter.append("\n");
+                                myOutWriter.close();
+                                fOut.flush();
+                                fOut.close();
+                                Thread.sleep(5 * 60 * 1000);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        Log.e("Exception", "File write failed: " + e.toString());
+                    }
+                }
+            });
+            batteryLevelMonitorThread.start();
+        }
+        super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
@@ -111,16 +186,7 @@ public class BleDiscoveryService extends Service implements
         if(!wakeLock.isHeld()) {
             wakeLock.acquire();
         }
-
-        List<ScanFilter> filters = new ArrayList<>();
-        ScanFilter filter = new ScanFilter.Builder()
-                .setServiceUuid(Constants.SERVICE_UUID)
-                .build();
-        filters.add(filter);
-        ScanSettings settings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-                .build();
-        mBluetoothLeScanner.startScan(filters, settings, mScanCallback);
+        mBluetoothLeScanner.startScan(scanFilters, scanSettings, mScanCallback);
     }
 
     public void stopDiscovery() {
@@ -150,10 +216,7 @@ public class BleDiscoveryService extends Service implements
                 try {
                     msg = MessageCreator.createMessage(demoData);
                 }
-                catch (InvalidMessageLengthException |
-                        InvalidMessageSourceLengthException |
-                        InvalidMessageDestinationLengthException |
-                        InvalidMessageDataLengthException e){
+                catch (InvalidLengthException e){
                     Log.d(TAG, "Length invalid, discarding message");
                     e.printStackTrace();
                     return;
@@ -186,6 +249,8 @@ public class BleDiscoveryService extends Service implements
         discoveryResultToMessageHandler.setOnPreprocessedMessageReceivedListener(this);
         discoveryResultToMessageHandler.removeOnConfigurationMessageReceivedListener(this);
         discoveryResultToMessageHandler.removeOnNotificationMessageReceivedListener(notificationHandler);
+
+        batteryLevelMonitorThread.interrupt();
     }
 
     @Override
@@ -248,5 +313,14 @@ public class BleDiscoveryService extends Service implements
 
     public static int getTotalPackets() {
         return lastTotalPackets;
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
     }
 }

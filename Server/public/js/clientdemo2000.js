@@ -25,12 +25,12 @@ $(document).ready(function() {
     var audioElement = $("#audioEffects").get(0);
     var audioElementBackground = $("#audioBackground").get(0);
 
-    socket.emit('advertisedata',"fbbf000000030100000000000000000000000000");
+    socket.emit('advertisedata',"fffffffbbf00000003010000000000000000000000000000");
 
     socket.on('tapper', function(msg){
       var tapData = hexToBytes(msg);
-      if(tapData[7] === 0x01){
-        if((tapData[0] === IDBlue[0] && tapData[1] === IDBlue[1]) && readyToPlay){
+      if(tapData[10] === 0x01){
+        if((tapData[3] === IDBlue[0] && tapData[4] === IDBlue[1]) && readyToPlay){
           playSound("furp.wav");          
           tapcounterBlue++;
           $('#playerblue').height($('#playerblue').height() + tapImpact);
@@ -50,23 +50,26 @@ $(document).ready(function() {
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
 
             readyToPlay = false;
-            var sendData = new Uint8Array(20);
-            sendData[0] = 0xFB;
-            sendData[1] = 0xBF;
-            sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x00; ///set broadcast
-            sendData[4] = tapData[4] + 0x10; //copy ID
-            sendData[5] = 0x01; //Type data
-            sendData[6] = 0x07; //Tapper demo
-            sendData[7] = 0x20; //Won game
-            sendData[8] = IDBlue[0]; //Blue id won
-            sendData[9] = IDBlue[1]; //Blue id won
+            var sendData = new Uint8Array(24);
+            sendData[0] = 0xFF;
+            sendData[1] = 0xFF;
+            sendData[2] = 0xFF;
+            sendData[3] = 0xFB;
+            sendData[4] = 0xBF;
+            sendData[5] = 0x00; //set broadcast
+            sendData[6] = 0x00; ///set broadcast
+            sendData[7] = tapData[7] + 0x10; //copy ID
+            sendData[8] = 0x01; //Type data
+            sendData[9] = 0x07; //Tapper demo
+            sendData[10] = 0x20; //Won game
+            sendData[11] = IDBlue[0]; //Blue id won
+            sendData[12] = IDBlue[1]; //Blue id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
           }
         }
-        if((tapData[0] === IDRed[0] && tapData[1] === IDRed[1]) && readyToPlay){
+        if((tapData[3] === IDRed[0] && tapData[4] === IDRed[1]) && readyToPlay){
           playSound("plop.wav");          
           tapcounterRed++;
           $('#playerred').height($('#playerred').height() + tapImpact);
@@ -86,23 +89,26 @@ $(document).ready(function() {
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
             
             readyToPlay = false;
-            var sendData = new Uint8Array(20);
-            sendData[0] = 0xFB;
-            sendData[1] = 0xBF;
-            sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x00; ///set broadcast
-            sendData[4] = tapData[4] + 0x10; //copy ID
-            sendData[5] = 0x01; //Type data
-            sendData[6] = 0x07; //Tapper demo
-            sendData[7] = 0x20; //Won game
-            sendData[8] = IDRed[0]; //Red id won
-            sendData[9] = IDRed[1]; //Red id won
+            var sendData = new Uint8Array(24);
+            sendData[0] = 0xFF;
+            sendData[1] = 0xFF;
+            sendData[2] = 0xFF;
+            sendData[3] = 0xFB;
+            sendData[4] = 0xBF;
+            sendData[5] = 0x00; //set broadcast
+            sendData[6] = 0x00; ///set broadcast
+            sendData[7] = tapData[7] + 0x10; //copy ID
+            sendData[8] = 0x01; //Type data
+            sendData[9] = 0x07; //Tapper demo
+            sendData[10] = 0x20; //Won game
+            sendData[11] = IDRed[0]; //Red id won
+            sendData[12] = IDRed[1]; //Red id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
           }
         }
-        if((tapData[0] === IDPurple[0] && tapData[1] === IDPurple[1]) && readyToPlay){
+        if((tapData[3] === IDPurple[0] && tapData[4] === IDPurple[1]) && readyToPlay){
           playSound("fart.wav");                    
           tapcounterPurple++;
           $('#playerpurple').height($('#playerpurple').height() + tapImpact);          
@@ -122,17 +128,20 @@ $(document).ready(function() {
             $('#gameboard').css('line-height', $('#gameboard').height() + "px");
             
             readyToPlay = false;
-            var sendData = new Uint8Array(20);
-            sendData[0] = 0xFB;
-            sendData[1] = 0xBF;
-            sendData[2] = 0x00; //set broadcast
-            sendData[3] = 0x00; ///set broadcast
-            sendData[4] = tapData[4] + 0x10; //copy ID
-            sendData[5] = 0x01; //Type data
-            sendData[6] = 0x07; //Tapper demo
-            sendData[7] = 0x20; //Won game
-            sendData[8] = IDPurple[0]; //Purple id won
-            sendData[9] = IDPurple[1]; //Purple id won
+            var sendData = new Uint8Array(24);
+            sendData[0] = 0xFF;
+            sendData[1] = 0xFF;
+            sendData[2] = 0xFF;
+            sendData[3] = 0xFB;
+            sendData[4] = 0xBF;
+            sendData[5] = 0x00; //set broadcast
+            sendData[6] = 0x00; ///set broadcast
+            sendData[7] = tapData[4] + 0x10; //copy ID
+            sendData[8] = 0x01; //Type data
+            sendData[9] = 0x07; //Tapper demo
+            sendData[10] = 0x20; //Won game
+            sendData[11] = IDPurple[0]; //Purple id won
+            sendData[12] = IDPurple[1]; //Purple id won
             console.log("Sending advertisment: " + bytesToHex(sendData));
             socket.emit('advertisedata', bytesToHex(sendData));
             console.log("Sending red won");
@@ -165,21 +174,24 @@ $(document).ready(function() {
       console.log("Setplayer");
       var data = hexToBytes(msg);
       console.log("Data: " + data);
-      var sendData = new Uint8Array(20);
-      sendData[0] = 0xFB;
-      sendData[1] = 0xBF;
-      sendData[2] = data[0]; //set senderID as reciever
-      sendData[3] = data[1]; //set senderID as reciever
-      sendData[4] = data[4] + 0x10; //copy ID
-      sendData[5] = 0x01; //Type data
-      sendData[6] = 0x07; //Tapper demo
+      var sendData = new Uint8Array(24);
+      sendData[0] = 0xFF;
+      sendData[1] = 0xFF;
+      sendData[2] = 0xFF;
+      sendData[3] = 0xFB;
+      sendData[4] = 0xBF;
+      sendData[5] = data[3]; //set senderID as reciever
+      sendData[6] = data[4]; //set senderID as reciever
+      sendData[7] = data[7] + 0x10; //copy ID
+      sendData[8] = 0x01; //Type data
+      sendData[9] = 0x07; //Tapper demo
       
-      if(data[7] === 0x10){
+      if(data[10] === 0x10){
         if(IDBlue[0] === 0x00 && IDBlue[1] === 0x00){
           playSound("furp.wav");          
-          IDBlue[0] = data[0];
-          IDBlue[1] = data[1];
-          sendData[7] = data[7]; //Joined team blue
+          IDBlue[0] = data[3];
+          IDBlue[1] = data[4];
+          sendData[10] = data[10]; //Joined team blue
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
           console.log("Joined blue sending joined blue");
@@ -187,42 +199,42 @@ $(document).ready(function() {
         }
         else{
             console.log("Send team full");
-            sendData[7] = 0x40;
-            sendData[8] = data[7]; 
+            sendData[10] = 0x40;
+            sendData[11] = data[10]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
-      if(data[7] === 0x11){
+      if(data[10] === 0x11){
         if(IDRed[0] === 0x00 && IDRed[1] === 0x00){
           playSound("plop.wav");          
-          IDRed[0] = data[0];
-          IDRed[1] = data[1];
-          sendData[7] = data[7]; //Joined team red
+          IDRed[0] = data[3];
+          IDRed[1] = data[4];
+          sendData[10] = data[10]; //Joined team red
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
           $('#playerred').text(IDRed[0].toString(16).toUpperCase() + IDRed[1].toString(16).toUpperCase());
         }
         else{
             console.log("Send team full");
-            sendData[7] = 0x40;
-            sendData[8] = data[7]; 
+            sendData[10] = 0x40;
+            sendData[11] = data[11]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
-    if(data[7] === 0x12){
+    if(data[10] === 0x12){
         if(IDPurple[0] === 0x00 && IDPurple[1] === 0x00){
           playSound("fart.wav");
-          IDPurple[0] = data[0];                    
-          IDPurple[1] = data[1];
-          sendData[7] = data[7]; //Joined team pruple
+          IDPurple[0] = data[3];                    
+          IDPurple[1] = data[4];
+          sendData[10] = data[10]; //Joined team pruple
           console.log("Sending advertisment: " + bytesToHex(sendData));
           socket.emit('advertisedata', bytesToHex(sendData));
           $('#playerpurple').text(IDPurple[0].toString(16).toUpperCase() + IDPurple[1].toString(16).toUpperCase());
         }
         else{
             console.log("Send team full");
-            sendData[7] = 0x40;
-            sendData[8] = data[7]; 
+            sendData[10] = 0x40;
+            sendData[11] = data[10]; 
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
@@ -230,7 +242,7 @@ $(document).ready(function() {
     socket.on('playerready', function(msg){
       var data = hexToBytes(msg);
       console.log("Player ready: " + msg.toString('hex'));
-      if(data[7] === 0x50){
+      if(data[10] === 0x50){
         playersJoined++
         if(playersJoined === 3 && readyToPlay === false){   
             playerAmountInGame = 3;
@@ -290,7 +302,7 @@ $(document).ready(function() {
       return false;
     });
     window.onbeforeunload = function() {
-      socket.emit('advertisedata',"fbbf0000ff03ff00000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000ff03ff0000000000000000000000000000");
     };
     function hexToBytes(hex) {
       for (var bytes = [], c = 0; c < hex.length; c += 2)

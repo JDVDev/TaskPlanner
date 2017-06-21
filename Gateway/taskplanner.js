@@ -4,11 +4,9 @@ var io = require('socket.io-client');
 var execFile = require('child_process').execFile;
 var sys = require('util')
 var exec = require('child_process').exec;
-var events = require('events');
-var eventEmitter = new events.EventEmitter();
 
-const MESSAGE_LEN = 40;
-const MESSAGE_OFFSET = 11;
+const MESSAGE_LEN = 48;
+const MESSAGE_OFFSET = 7;
 const SERVICE_UUID_16 = "FEF1";
 const SERVICE_UUID_128 = "0000" + SERVICE_UUID_16 + "-0000-1000-8000-00805F9B34FB";
 const ADVERTISE_TIME = 5000;
@@ -32,7 +30,6 @@ var socket = io("http://192.168.10.157:8081"); //Setup connection to server
 
 socket.on('advertisedata', function(msg){ //Start advertising received data
     console.log('message: ' + msg);
-    var scanData = Buffer.alloc(31); // maximum 31 bytes
     var advertisementData = Buffer.alloc(31); // maximum 31 bytes
     /*advertisementData[0] = 0x02; // Upcomming data length. //Old implementation
 	  advertisementData[1] = 0x01; // Indicate next byte is type flag.
@@ -44,14 +41,10 @@ socket.on('advertisedata', function(msg){ //Start advertising received data
     advertisementData[0] = 0x02; // Upcomming data length.
 	  advertisementData[1] = 0x01; // Indicate next byte is type flag.
 	  advertisementData[2] = 0x02; // Flag data (General Discoverable).
-    advertisementData[3] = 0x03; // Upcomming data length.
-	  advertisementData[4] = 0x03; // Indicate list complete 16 bit uuid.
-	  advertisementData[5] = 0xF1; // First 8 bit uuid.
-	  advertisementData[6] = 0xFE; // Last 8 bit uuid.
-	  advertisementData[7] = 0x17; // Upcomming data length.
-	  advertisementData[8] = 0x16; // Indicate upcomming data is service data
-	  advertisementData[9] = 0xF1; // Last 8 bit uuid.
-    advertisementData[10] = 0xFE; // Last 8 bit uuid.
+	  advertisementData[3] = 0x1B; // Upcomming data length.
+	  advertisementData[4] = 0x16; // Indicate upcomming data is service data
+	  advertisementData[5] = 0xF1; // Last 8 bit uuid.
+    advertisementData[6] = 0xFE; // Last 8 bit uuid.
     console.log("msg.lenght: " + msg.length);
     if(msg.length === MESSAGE_LEN && canAdvertise){
       console.log("Advertisement: " + advertisementData.toString('hex'));
@@ -60,7 +53,7 @@ socket.on('advertisedata', function(msg){ //Start advertising received data
       for(var i = 0; i < recivedData.length; i++){
           advertisementData[i + MESSAGE_OFFSET] = recivedData[i];
       }
-      advertisementData[21] = 0x02; //Raspi ID for counter demo, 0x01=171, 0x02=131
+      advertisementData[21] = 0x01; //Raspi ID for counter demo, 0x01=171, 0x02=131
       console.log("Advertisement: " + advertisementData.toString('hex'));
       if(isEnabled){
         //bleno.startAdvertisingWithEIRData(advertisementData);
@@ -143,6 +136,7 @@ noble.on('stateChange', function(state) { //Start listening when bluetooth adapt
   }
   if (state === 'poweredOff') {
     console.log("State poweredOff stop scanning");
+    canDiscover = false;
     noble.stopScanning();
   }
 });

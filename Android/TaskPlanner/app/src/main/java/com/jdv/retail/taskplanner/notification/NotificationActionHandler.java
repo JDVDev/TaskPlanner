@@ -22,6 +22,7 @@ import android.util.Log;
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.bluetooth.BleAdvertiser;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -87,6 +88,7 @@ public class NotificationActionHandler extends IntentService {
             messageData[2] = ogMessageContent[0]; //Set og question that was send to identify reaction to a specific question
             messageData[3] = ogMessageContent[1];
             Message message = MessageCreator.createMessage(
+                    Constants.MESSAGE_SEQUENCE,
                     Utils.getDeviceID(getApplicationContext()),
                     Constants.BASESTATION_ID,
                     Message.MESSAGE_TYPE_DATA,
@@ -94,9 +96,7 @@ public class NotificationActionHandler extends IntentService {
             BleAdvertiser.getInstance().sendAdvertising(message);
             new NotificationHandler(getApplicationContext()).dismissNotification();
         }
-        catch (InvalidMessageSourceLengthException |
-                InvalidMessageDestinationLengthException |
-                InvalidMessageDataLengthException e){
+        catch (InvalidLengthException e){
             e.printStackTrace();
         }
     }

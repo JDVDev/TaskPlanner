@@ -5,9 +5,9 @@ $(document).ready(function() {
     var jsonString = '{ "notification": [ { "id": "0001", "content": "What do you want to eat?", "action": [ { "id": "01", "content": "Meat" }, { "id": "02", "content": "Vegetables" }, { "id": "03", "content": "Chicken" }, { "id": "04", "content": "Fish" }, { "id": "05", "content": "Car" }, { "id": "06", "content": "Macawoni" }, { "id": "07", "content": "Mustache" }, { "id": "08", "content": "Surprise skittels instead of m&ms" } ] }, { "id": "0002", "content": "When do you want to go home?", "action": [ { "id": "01", "content": "When my work day ends" }, { "id": "02", "content": "Over a hour" }, { "id": "03", "content": "At 19:00" }, { "id": "04", "content": "Now" }, { "id": "05", "content": "Didnt even want to come" }, { "id": "06", "content": "Already gone" }, { "id": "07", "content": "At home sick" }, { "id": "08", "content": "Fanta" } ] }, { "id": "0003", "content": "What are you doing this weekend?", "action": [ { "id": "01", "content": "Chill" }, { "id": "02", "content": "Skipping work" }, { "id": "03", "content": "Work extra because I love my boss" }, { "id": "04", "content": "Gym life" }, { "id": "05", "content": "Bungee jump" }, { "id": "06", "content": "Party with lots of drugs" }, { "id": "07", "content": "Mustache" }, { "id": "08", "content": "Getting fired for giving the options above" } ] }, { "id": "0004", "content": "Give me a cookie!!", "action": [ { "id": "01", "content": "Yes" }, { "id": "02", "content": "Ill give you 2" }, { "id": "03", "content": "Yes" }, { "id": "04", "content": "YEAH" } ] } ] }';
     var jsonObj = JSON.parse(jsonString);
     socket.on('notificationaction', function(msg){
-      var notificationID = msg.substr(12, 4);
-      var actionID = msg.substr(16, 2);
-      var deviceID = msg.substr(0, 4);
+      var notificationID = msg.substr(18, 4);
+      var actionID = msg.substr(22, 2);
+      var deviceID = msg.substr(6, 4);
       var content = "";
       for(var i = 0; i < jsonObj.notification.length; i++){
         if(jsonObj.notification[i].id === notificationID){
@@ -35,19 +35,19 @@ $(document).ready(function() {
     });
     $("#btnVraag1").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"fbbf000001040001000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000010400010000000000000000000000000F");
     });
     $("#btnVraag2").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"fbbf000002040002000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000020400020000000000000000000000000F");
     });
     $("#btnVraag3").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"fbbf000003040003000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000030400030000000000000000000000000F");
     });
     $("#btnVraag4").click(function(){
       answerCounter = 0;
-      socket.emit('advertisedata',"fbbf000004040004000000000000000000000000");
+      socket.emit('advertisedata',"fffffffbbf0000040400040000000000000000000000000F");
     });
     $("#btnSwitch131").click(function(){
       socket.emit('toggle131', toggle131);
@@ -79,6 +79,6 @@ $(document).ready(function() {
       return false;
     });
     window.onbeforeunload = function() {
-      socket.emit('advertisedata',"fffb0003ff000000000000000000000000000000");
+      socket.emit('advertisedata',"fffffffffb0003ff00000000000000000000000000000000");
     };
 });

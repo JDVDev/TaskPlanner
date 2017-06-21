@@ -24,6 +24,7 @@ import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.R;
 import com.jdv.retail.taskplanner.Utils;
 import com.jdv.retail.taskplanner.bluetooth.BleAdvertiser;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -153,14 +154,13 @@ public class NotificationActivity extends WearableActivity implements
             messageData[1] = notificationData.getNotificationID()[1];
             messageData[2] = action.getActionID();
             prePreparedMessage = MessageCreator.createMessage(
+                    Constants.MESSAGE_SEQUENCE,
                     Utils.getDeviceID(context),
                     Constants.BASESTATION_ID,
                     Message.MESSAGE_TYPE_NOTI,
                     messageData
             );
-        } catch (InvalidMessageSourceLengthException |
-                InvalidMessageDestinationLengthException |
-                InvalidMessageDataLengthException e) {
+        } catch (InvalidLengthException e) {
             e.printStackTrace();
         }
         startActivityForResult(intent, REQUESTCODE);

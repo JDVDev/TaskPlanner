@@ -18,6 +18,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.jdv.retail.taskplanner.Constants;
+import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
@@ -131,6 +132,7 @@ public class BleCommunicationService extends Service implements DiscoveryResultT
     private void startAdvertising(){
         try {
             Message msg = MessageCreator.createMessage(
+                    Constants.MESSAGE_SEQUENCE,
                     Utils.getDeviceID(context),
                     Constants.BASESTATION_ID,
                     Message.MESSAGE_TYPE_POLL,
@@ -139,9 +141,7 @@ public class BleCommunicationService extends Service implements DiscoveryResultT
             Log.d(TAG, "StartAdvertising");
             Log.d(TAG, "Counter send: " + (++sendCounter) + " " + String.format("%02X",msg.getMessageID()));
         }
-        catch (InvalidMessageSourceLengthException |
-                InvalidMessageDestinationLengthException |
-                InvalidMessageDataLengthException e){
+        catch (InvalidLengthException e){
             e.printStackTrace();
         }
     }
