@@ -7,7 +7,7 @@ if [[ $1 != 'gateway' ]] && [[ $1 != 'server' ]]; then
 	echo "Need one product as argument. gateway or server"
 	exit 1
 fi
-apt install vsftpd
+apt install -y vsftpd
 bash -c 'echo "write_enable=YES" >> /etc/vsftpd.conf'
 systemctl restart vsftpd
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
