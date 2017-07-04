@@ -217,7 +217,7 @@ $(document).ready(function() {
         else{
             console.log("Send team full");
             sendData[10] = 0x40;
-            sendData[11] = data[11]; 
+            sendData[11] = data[10];
             socket.emit('advertisedata', bytesToHex(sendData));
         }
       }
