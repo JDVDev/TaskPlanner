@@ -78,10 +78,12 @@ public class DiscoveryResultToMessageHandler{
         Message msg;
         try {
             msg = MessageCreator.createMessage(content);
-            Log.d(TAG, "Encrypted message: " + msg);
+            //Log.d(TAG, "Encrypted message: " + msg);
             msg = EncryptionHandler.decrypt(msg, Constants.NETWORK_KEY);
-            Log.d(TAG, "Decrypted message: " + msg);
-            byte[] tempData = msg.getMessageData();
+            //Log.d(TAG, "Decrypted message: " + msg);
+            byte[] tempData = msg.getMessageData().clone();
+            Log.d(TAG, "Process message before: " + msg);
+            tempData[tempData.length - 1] = 0x00;// Reset receiver ID, remove code if non proof of concept code
             byte[] hash = msg.getMessageKey();
             byte[] newHash = MessageCreator.createMessageHash(
                     Constants.NETWORK_KEY,

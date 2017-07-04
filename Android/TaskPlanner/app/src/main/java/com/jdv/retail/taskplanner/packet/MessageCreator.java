@@ -43,7 +43,7 @@ public class MessageCreator {
         System.arraycopy(rawBytes, Message.MESSAGE_DATA_OFS + Message.MESSAGE_DATA_LEN, messageKey, 0, Message.MESSAGE_EKEY_LEN);
         messageTTL = rawBytes[rawBytes.length - 1];
 
-        Log.d(Constants.TAG, "getRaw " + Utils.bytesToHexString(new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, messageTTL).getRawBytes()));
+        //Log.d(Constants.TAG, "getRaw " + Utils.bytesToHexString(new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, messageTTL).getRawBytes()));
         return new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, messageTTL);
     }
 
@@ -60,7 +60,7 @@ public class MessageCreator {
         if (messageData.length != Message.MESSAGE_DATA_LEN) throw new InvalidLengthException();
 
         byte[] messageKey = createMessageHash(Constants.NETWORK_KEY, messageSequence, sourceID, destinationID, messageID, messageType, messageData);
-        Log.d(Constants.TAG, "getRaw " + Utils.bytesToHexString(new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, Message.TIME_TO_LIVE_HOPPING).getRawBytes()));
+        //Log.d(Constants.TAG, "getRaw " + Utils.bytesToHexString(new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, Message.TIME_TO_LIVE_HOPPING).getRawBytes()));
 
         return new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, Message.TIME_TO_LIVE_HOPPING);
     }
@@ -107,9 +107,9 @@ public class MessageCreator {
             for (int i = 0; i < result.length; i++){
                 result[i] = hmac[(hmac.length - 1) - i];
             }
-            Log.d(Constants.TAG, "Data " + Utils.bytesToHexString(appended));
+            /*Log.d(Constants.TAG, "Data " + Utils.bytesToHexString(appended));
             Log.d(Constants.TAG, "Key og " + Utils.bytesToHexString(hmac));
-            Log.d(Constants.TAG, "Key result " + Utils.bytesToHexString(result));
+            Log.d(Constants.TAG, "Key result " + Utils.bytesToHexString(result));*/
             return result;
         }
         catch (NoSuchAlgorithmException | InvalidKeyException | IOException e){

@@ -44,7 +44,6 @@ public class EncryptionHandler {
             Cipher c = Cipher.getInstance("AES/CTR/NoPadding");
             IvParameterSpec ivspec = new IvParameterSpec(iv);
             SecretKeySpec key = new SecretKeySpec(password.getBytes("UTF-8"), "AES");
-            Log.d(Constants.TAG, "Generated key:" + Utils.bytesToHexString(key.getEncoded()));
             c.init(Cipher.ENCRYPT_MODE, key, ivspec);
             encrypted = c.doFinal(appended);
 

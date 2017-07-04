@@ -4,6 +4,10 @@ var io = require('socket.io-client');
 var execFile = require('child_process').execFile;
 var sys = require('util')
 var exec = require('child_process').exec;
+var crypto = require('crypto');
+
+const password = "067835110a97e82dd18f0a39e426a5ef";
+var algorithm = 'aes-256-ctr';
 
 const MESSAGE_LEN = 48;
 const MESSAGE_OFFSET = 7;
@@ -49,11 +53,16 @@ socket.on('advertisedata', function(msg){ //Start advertising received data
     if(msg.length === MESSAGE_LEN && canAdvertise){
       console.log("Advertisement: " + advertisementData.toString('hex'));
       var recivedData = Buffer.from(msg, 'hex');
+
+      //FOR DEMO
+      recivedData = decrypt(recivedData);
+      recivedData[14] = 0x01; //Raspi ID for counter demo, 0x01=171, 0x02=131
+      recivedData = encrypt(recivedData);
+
       console.log("recivedData: " + recivedData.toString('hex'));
       for(var i = 0; i < recivedData.length; i++){
           advertisementData[i + MESSAGE_OFFSET] = recivedData[i];
       }
-      //advertisementData[7] = 0x02; //Raspi ID for counter demo, 0x01=171, 0x02=131
       console.log("Advertisement: " + advertisementData.toString('hex'));
       if(isEnabled){
         //bleno.startAdvertisingWithEIRData(advertisementData);
@@ -162,3 +171,37 @@ noble.on('discover', function(peripheral) {
     }
   }
 });
+
+function encrypt(buffer){
+  var iv = Buffer.alloc(16);
+  iv[0] = buffer[0];
+  iv[1] = buffer[1];
+  iv[2] = buffer[2];
+
+  iv[4] = buffer[3];
+  iv[5] = buffer[4];
+
+  toEncBuffer = buffer.slice(5, 15);
+  console.log(toEncBuffer.toString('hex'));
+  var cipher = crypto.createCipheriv(algorithm,password,iv);
+  cipher.setAutoPadding(false);
+  var crypted = Buffer.concat([cipher.update(toEncBuffer),cipher.final()]);
+  buffer.fill(crypted, 5, 15);
+  return buffer;
+}
+ 
+function decrypt(buffer){
+  var iv = Buffer.alloc(16);
+  iv[0] = buffer[0];
+  iv[1] = buffer[1];
+  iv[2] = buffer[2];
+
+  iv[4] = buffer[3];
+  iv[5] = buffer[4];
+  toDencBuffer = buffer.slice(5, 15);
+  var decipher = crypto.createDecipheriv(algorithm,password,iv);
+  decipher.setAutoPadding(false);
+  var dec = Buffer.concat([decipher.update(toDencBuffer) , decipher.final()]);
+  buffer.fill(dec, 5, 15);
+  return buffer;
+}
