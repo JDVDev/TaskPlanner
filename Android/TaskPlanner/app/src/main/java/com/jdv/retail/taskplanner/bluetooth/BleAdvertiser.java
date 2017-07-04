@@ -5,10 +5,10 @@ import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
-import android.os.ParcelUuid;
 import android.util.Log;
 
 import com.jdv.retail.taskplanner.Constants;
+import com.jdv.retail.taskplanner.encryption.EncryptionHandler;
 import com.jdv.retail.taskplanner.packet.AdvertisingPacket;
 import com.jdv.retail.taskplanner.packet.Message;
 
@@ -55,6 +55,7 @@ public class BleAdvertiser{
     }
 
     public void sendAdvertising(Message message){
+        message = EncryptionHandler.encrypt(message, Constants.NETWORK_KEY);
         AdvertiseData data = new AdvertiseData.Builder()
                 .setIncludeDeviceName(false)
                 .addServiceData(Constants.SERVICE_UUID, message.getRawBytes())

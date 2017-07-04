@@ -53,7 +53,7 @@ socket.on('advertisedata', function(msg){ //Start advertising received data
       for(var i = 0; i < recivedData.length; i++){
           advertisementData[i + MESSAGE_OFFSET] = recivedData[i];
       }
-      advertisementData[21] = 0x01; //Raspi ID for counter demo, 0x01=171, 0x02=131
+      //advertisementData[7] = 0x02; //Raspi ID for counter demo, 0x01=171, 0x02=131
       console.log("Advertisement: " + advertisementData.toString('hex'));
       if(isEnabled){
         //bleno.startAdvertisingWithEIRData(advertisementData);

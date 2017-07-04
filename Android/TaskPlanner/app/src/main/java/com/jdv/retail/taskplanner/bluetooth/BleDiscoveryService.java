@@ -27,6 +27,7 @@ import com.jdv.retail.taskplanner.activity.DemoCounterActivity;
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.activity.DemoSnakeActivity;
 import com.jdv.retail.taskplanner.activity.DemoTapperActivity;
+import com.jdv.retail.taskplanner.encryption.EncryptionHandler;
 import com.jdv.retail.taskplanner.exception.InvalidLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
@@ -214,7 +215,7 @@ public class BleDiscoveryService extends Service implements
             if(demoData != null) {
                 Message msg;
                 try {
-                    msg = MessageCreator.createMessage(demoData);
+                    msg = EncryptionHandler.decrypt(MessageCreator.createMessage(demoData), Constants.NETWORK_KEY);
                 }
                 catch (InvalidLengthException e){
                     Log.d(TAG, "Length invalid, discarding message");

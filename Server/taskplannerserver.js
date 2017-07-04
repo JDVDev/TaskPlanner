@@ -8,7 +8,8 @@ var Stopwatch = require('timer-stopwatch');
 var stopwatch = new Stopwatch();
 var crypto = require('crypto');
 
-var key = '067835110a97e82dd18f0a39e426a5ef';
+const password = "067835110a97e82dd18f0a39e426a5ef";
+var algorithm = 'aes-256-ctr';
 
 const MESSAGE_LEN = 48;
 var canAdvertise = false;
@@ -51,14 +52,16 @@ io.on('connection', function(socket){
     //console.log('message: ' + msg);
     //console.log("msg.lenght: " + msg.length);
     if(msg.length === MESSAGE_LEN){
-      var discoveryData = Buffer.from(msg, 'hex'); 
+      var discoveryData = Buffer.from(msg, 'hex');
+      //console.log("before decrypt discoveryData: " + discoveryData.toString('hex'));      
+      discoveryData = decrypt(discoveryData);
       //console.log("discoveryData: " + discoveryData.toString('hex'));
       //console.log("discoveryData.lenght: " + discoveryData.length);
       if(discoveryData[5] === 0xFB && discoveryData[6] === 0xBF){ //thats me
-        if(createHash(msg).equals(discoveryData.slice(15, 15 + 8))){//For this network
+        //console.log("recieved hash: " + discoveryData.slice(15, 15 + 8).toString('hex'));
+        //console.log("created hash: " + createHash(msg).toString('hex'));
+        if(createHash(discoveryData).equals(discoveryData.slice(15, 15 + 8))){//For this network
           //console.log("recieved message: " + msg);
-          //console.log("recieved hash: " + discoveryData.slice(15, 15 + 8).toString('hex'));
-          //console.log("created hash: " + createHash(msg).toString('hex'));
           //console.log("Correct hash");
           if(lastRecivedMessageIDBuffer.indexOf(discoveryData.slice(0, discoveryData.length - 1).toString('hex')) === -1){
             console.log("Total packets: " + identicalPacketCounter);
@@ -281,6 +284,7 @@ function advertise(stringData){
       data[15 + index] = hash[index];
     }
     data[data.length - 1] = 0x0F;
+    data = encrypt(data);
     console.log("Advertise: " + data.toString('hex')); 
     io.emit('advertisedata', data.toString('hex')); //Broadcast advertise data to raspis
   }
@@ -292,7 +296,7 @@ function createHash(stringData){
     for(var i = 0; i < 15; i++){
       offsetData[i+8] = data[i];
     }
-    var hash = crypto.createHmac('sha256', key)
+    var hash = crypto.createHmac('sha256', password)
                    .update(offsetData)
                    .digest('hex');
     var asie = Buffer.from(hash, 'hex');
@@ -303,6 +307,40 @@ function createHash(stringData){
     }
     //console.log("return hash: " + data.slice(15, 15 + 8).toString('hex'));
     return data.slice(15, 15 + 8);
+}
+
+function encrypt(buffer){
+  var iv = Buffer.alloc(16);
+  iv[0] = buffer[0];
+  iv[1] = buffer[1];
+  iv[2] = buffer[2];
+
+  iv[4] = buffer[3];
+  iv[5] = buffer[4];
+
+  toEncBuffer = buffer.slice(5, 15);
+  console.log(toEncBuffer.toString('hex'));
+  var cipher = crypto.createCipheriv(algorithm,password,iv);
+  cipher.setAutoPadding(false);
+  var crypted = Buffer.concat([cipher.update(toEncBuffer),cipher.final()]);
+  buffer.fill(crypted, 5, 15);
+  return buffer;
+}
+ 
+function decrypt(buffer){
+  var iv = Buffer.alloc(16);
+  iv[0] = buffer[0];
+  iv[1] = buffer[1];
+  iv[2] = buffer[2];
+
+  iv[4] = buffer[3];
+  iv[5] = buffer[4];
+  toDencBuffer = buffer.slice(5, 15);
+  var decipher = crypto.createDecipheriv(algorithm,password,iv);
+  decipher.setAutoPadding(false);
+  var dec = Buffer.concat([decipher.update(toDencBuffer) , decipher.final()]);
+  buffer.fill(dec, 5, 15);
+  return buffer;
 }
 
 http.listen(8081, function(){ //Listen for connenctions

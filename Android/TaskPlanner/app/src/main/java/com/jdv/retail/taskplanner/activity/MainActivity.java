@@ -277,35 +277,35 @@ public class MainActivity extends WearableActivity {
         int randomInt = createRandomIntInRange(3);
         byte[] emptyMessageData = Message.getEmptyMessageData();
         try {
-            /*switch (randomInt) {
+            switch (randomInt) {
                 case 0:
-                    emptyMessageData[0] = 0x01;
+                    emptyMessageData[0] = 0x00;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_NOTI, emptyMessageData);
                 case 1:
-                    emptyMessageData[0] = 0x01;
+                    emptyMessageData[0] = 0x00;
                     emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_NOTI, emptyMessageData);
                 case 2:
-                    emptyMessageData[0] = 0x02;
-                    emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
+                    emptyMessageData[0] = 0x00;
+                    emptyMessageData[1] = 0x03;
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_NOTI, emptyMessageData);
                 case 3:
-                    emptyMessageData[0] = 0x02;
-                    emptyMessageData[1] = 0x02;
-                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
-                default:
-                    emptyMessageData[0] = 0x01;
+                    emptyMessageData[0] = 0x00;
+                    emptyMessageData[1] = 0x04;
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_NOTI, emptyMessageData);
+                default: //Should not come here
+                    emptyMessageData[0] = 0x00;
                     emptyMessageData[1] = 0x01;
-                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_DATA, emptyMessageData);
-            }*/
-            return MessageCreator.createMessage(
+                    return MessageCreator.createMessage(Constants.MESSAGE_SEQUENCE, deviceID, Message.MESSAGE_TYPE_NOTI, emptyMessageData);
+            }
+            /*return MessageCreator.createMessage(
                     Utils.hexStringToByteArray("ffffff"),
                     Utils.hexStringToByteArray("fbbf"),
-                    Utils.hexStringToByteArray("0000"),
+                    Utils.hexStringToByteArray("EC3C"),
                     Utils.hexStringToByteArray("72")[0],
                     Utils.hexStringToByteArray("01")[0],
-                    Utils.hexStringToByteArray("0720b3620000"));
+                    Utils.hexStringToByteArray("0720b3620000"));*/
 
         } catch (InvalidLengthException e) {
             e.printStackTrace();

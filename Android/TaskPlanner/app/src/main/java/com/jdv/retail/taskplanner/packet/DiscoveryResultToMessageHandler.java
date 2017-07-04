@@ -7,12 +7,9 @@ import android.widget.Toast;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.bluetooth.BleDiscoveryService;
+import com.jdv.retail.taskplanner.encryption.EncryptionHandler;
 import com.jdv.retail.taskplanner.exception.InvalidLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
-import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +78,13 @@ public class DiscoveryResultToMessageHandler{
         Message msg;
         try {
             msg = MessageCreator.createMessage(content);
+            Log.d(TAG, "Encrypted message: " + msg);
+            msg = EncryptionHandler.decrypt(msg, Constants.NETWORK_KEY);
+            Log.d(TAG, "Decrypted message: " + msg);
             byte[] tempData = msg.getMessageData();
-            tempData[tempData.length - 1] = 0x00;// Reset receiver ID, remove code if non proof of concept code
             byte[] hash = msg.getMessageKey();
-            byte[] newHash = MessageCreator.createMessageKey(
-                    Constants.ENCRYPTION_KEY,
+            byte[] newHash = MessageCreator.createMessageHash(
+                    Constants.NETWORK_KEY,
                     msg.getMessageSequence(),
                     msg.getSourceID(),
                     msg.getDestinationID(),

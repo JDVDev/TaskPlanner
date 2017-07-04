@@ -2,27 +2,16 @@ package com.jdv.retail.taskplanner.packet;
 
 
 
-import android.support.v4.content.res.TypedArrayUtils;
 import android.util.Log;
 
 import com.jdv.retail.taskplanner.Constants;
 import com.jdv.retail.taskplanner.exception.InvalidLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageDataLengthException;
 import com.jdv.retail.taskplanner.Utils;
-import com.jdv.retail.taskplanner.exception.InvalidMessageDestinationLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageLengthException;
-import com.jdv.retail.taskplanner.exception.InvalidMessageSourceLengthException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -70,7 +59,7 @@ public class MessageCreator {
         if (destinationID.length != Message.MESSAGE_DEST_LEN) throw new InvalidLengthException();
         if (messageData.length != Message.MESSAGE_DATA_LEN) throw new InvalidLengthException();
 
-        byte[] messageKey = createMessageKey(Constants.ENCRYPTION_KEY, messageSequence, sourceID, destinationID, messageID, messageType, messageData);
+        byte[] messageKey = createMessageHash(Constants.NETWORK_KEY, messageSequence, sourceID, destinationID, messageID, messageType, messageData);
         Log.d(Constants.TAG, "getRaw " + Utils.bytesToHexString(new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, Message.TIME_TO_LIVE_HOPPING).getRawBytes()));
 
         return new Message(messageSequence, sourceID, destinationID, messageID, messageType, messageData, messageKey, Message.TIME_TO_LIVE_HOPPING);
@@ -98,7 +87,7 @@ public class MessageCreator {
         return message;
     }
 
-    public static byte[] createMessageKey(String key, byte[] seq, byte[] src, byte[] dest, byte msgID, byte msgType, byte[] data) {
+    public static byte[] createMessageHash(String key, byte[] seq, byte[] src, byte[] dest, byte msgID, byte msgType, byte[] data) {
         byte[] offset = new byte[8];
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
